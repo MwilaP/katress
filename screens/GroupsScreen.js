@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,9 +8,11 @@ import {
   ScrollView,
   TextInput,
   Pressable,
+  TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-const groups = {
+const gen = {
   A: [
     { name: "Nathan" },
     { name: "Rachel" },
@@ -41,8 +43,31 @@ const groups = {
   ],
 };
 
+const data = [
+  { name: "Alice" },
+  { name: "Bob" },
+  { name: "Charlie" },
+  { name: "David" },
+  { name: "Eve" },
+  { name: "Frank" },
+  { name: "Grace" },
+  { name: "Hannah" },
+  { name: "Ivy" },
+  { name: "Jack" },
+  { name: "Kathy" },
+  { name: "Leo" },
+  { name: "Mona" },
+  { name: "Nathan" },
+  { name: "Olivia" },
+  { name: "Paul" },
+  { name: "Quincy" },
+  { name: "Rachel" },
+  { name: "Steve" },
+  { name: "Tina" },
+];
+
 const initialStats = (group) =>
-  group.reduce((acc, player) => {
+  group?.reduce((acc, player) => {
     acc[player.name] = {
       points: 0,
       gamesPlayed: 0,
@@ -68,13 +93,31 @@ const generateRoundRobinMatches = (group) => {
   return matches;
 };
 
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function createRandomGroups(array, groupSize) {
+  shuffleArray(array);
+  const groups = {};
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  for (let i = 0; i < array.length; i += groupSize) {
+    const group = array.slice(i, i + groupSize);
+    const groupLabel = alphabet[Math.floor(i / groupSize)];
+    groups[groupLabel] = group;
+  }
+  return groups;
+}
+
 const GroupsScreen = ({ navigation }) => {
-  const [stats, setStats] = useState({
-    A: initialStats(groups.A),
-    B: initialStats(groups.B),
-    C: initialStats(groups.C),
-    D: initialStats(groups.D),
-  });
+  const [groups, setGroups] = useState("");
+  const [generatedGroups, setGenerateGroups] = useState("");
+  const [dumy, setDumy] = useState("");
+
+  const [stats, setStats] = useState("");
 
   const [recordedMatches, setRecordedMatches] = useState({
     A: [],
@@ -90,6 +133,23 @@ const GroupsScreen = ({ navigation }) => {
 
   const [player1Score, setPlayer1Score] = useState("");
   const [player2Score, setPlayer2Score] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    console.log("GENERATE", dumy);
+    if (dumy) {
+      setStats({
+        A: initialStats(generatedGroups.A),
+        B: initialStats(generatedGroups.B),
+        C: initialStats(generatedGroups.C),
+        D: initialStats(generatedGroups.D),
+      });
+      setGenerateGroups(dumy);
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
+    }
+  }, [generatedGroups, dumy]);
 
   const matches = generateRoundRobinMatches(groups[selectedGroup]);
 
@@ -178,8 +238,6 @@ const GroupsScreen = ({ navigation }) => {
     const sortedPlayers = Object.keys(stats[groupName]).sort((a, b) => {
       const playerA = stats[groupName][a];
       const playerB = stats[groupName][b];
-
-      // Sort by points, then by score difference, then by head-to-head
       return (
         playerB.points - playerA.points ||
         playerB.scoreFor -
@@ -235,69 +293,133 @@ const GroupsScreen = ({ navigation }) => {
     );
   };
 
+  if (groups) {
+    return (
+      <ScrollView contentContainerStyle={styles.container}>
+        {Object.keys(groups)?.map((groupName) => (
+          <View key={groupName}>{renderTable(groupName)}</View>
+        ))}
+        <Text style={styles.header}>Record Match Result</Text>
+        <Picker
+          selectedValue={selectedGroup}
+          onValueChange={(itemValue) => setSelectedGroup(itemValue)}
+          style={styles.picker}
+        >
+          {Object.keys(groups).map((groupName) => (
+            <Picker.Item
+              key={groupName}
+              label={`Group ${groupName}`}
+              value={groupName}
+            />
+          ))}
+        </Picker>
+
+        <Picker
+          selectedValue={selectedMatch}
+          onValueChange={(itemValue) => setSelectedMatch(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Select Match" value={null} />
+          {matches.map((match, index) => (
+            <Picker.Item
+              key={index}
+              label={`${match[0].name} vs ${match[1].name}`}
+              value={match}
+            />
+          ))}
+        </Picker>
+
+        {selectedMatch && (
+          <View>
+            <Text style={styles.label}>
+              Enter scores for {selectedMatch[0].name} vs{" "}
+              {selectedMatch[1].name}:
+            </Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder={`${selectedMatch[0].name}'s score`}
+              value={player1Score}
+              onChangeText={setPlayer1Score}
+            />
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder={`${selectedMatch[1].name}'s score`}
+              value={player2Score}
+              onChangeText={setPlayer2Score}
+            />
+          </View>
+        )}
+
+        <Button
+          title="Record Result"
+          onPress={handleRecordResult}
+          disabled={
+            !selectedMatch || player1Score === "" || player2Score === ""
+          }
+        />
+      </ScrollView>
+    );
+  }
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {Object.keys(groups)?.map((groupName) => (
-        <View key={groupName}>{renderTable(groupName)}</View>
-      ))}
-      <Text style={styles.header}>Record Match Result</Text>
-      <Picker
-        selectedValue={selectedGroup}
-        onValueChange={(itemValue) => setSelectedGroup(itemValue)}
-        style={styles.picker}
-      >
-        {Object.keys(groups).map((groupName) => (
-          <Picker.Item
-            key={groupName}
-            label={`Group ${groupName}`}
-            value={groupName}
-          />
-        ))}
-      </Picker>
-
-      <Picker
-        selectedValue={selectedMatch}
-        onValueChange={(itemValue) => setSelectedMatch(itemValue)}
-        style={styles.picker}
-      >
-        <Picker.Item label="Select Match" value={null} />
-        {matches.map((match, index) => (
-          <Picker.Item
-            key={index}
-            label={`${match[0].name} vs ${match[1].name}`}
-            value={match}
-          />
-        ))}
-      </Picker>
-
-      {selectedMatch && (
-        <View>
-          <Text style={styles.label}>
-            Enter scores for {selectedMatch[0].name} vs {selectedMatch[1].name}:
-          </Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            placeholder={`${selectedMatch[0].name}'s score`}
-            value={player1Score}
-            onChangeText={setPlayer1Score}
-          />
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            placeholder={`${selectedMatch[1].name}'s score`}
-            value={player2Score}
-            onChangeText={setPlayer2Score}
-          />
+    <View style={{ flex: 1, backgroundColor: "white" }}>
+      {loading ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      ) : (
+        <View style={{ flex: 1 }}>
+          {generatedGroups ? (
+            <View style={{ flex: 1, backgroundColor: "white", padding: 10 }}>
+              <ScrollView style={{ flex: 1 }}>
+                {Object?.keys(generatedGroups)?.map((groupName) => (
+                  <View key={groupName}>{renderTable(groupName)}</View>
+                ))}
+              </ScrollView>
+              <View style={{ alignItems: "center" }}>
+                <Pressable
+                  style={{
+                    backgroundColor: "green",
+                    width: "60%",
+                    height: 50,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    borderRadius: 10,
+                  }}
+                >
+                  <Text style={{color: 'white', fontWeight: '700'}}>SAVE</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <View style={{ padding: 20 }}>
+                <Text>No Groups</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => {
+                  setLoading(true);
+                  setDumy(createRandomGroups(data, 5));
+                }}
+              >
+                <Text style={{ fontSize: 17, fontWeight: "700" }}>
+                  Generate
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       )}
-
-      <Button
-        title="Record Result"
-        onPress={handleRecordResult}
-        disabled={!selectedMatch || player1Score === "" || player2Score === ""}
-      />
-    </ScrollView>
+    </View>
   );
 };
 
@@ -306,7 +428,7 @@ export default GroupsScreen;
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    backgroundColor: "white",
+    backgroundColor: "green",
   },
   table: {
     marginBottom: 20,
