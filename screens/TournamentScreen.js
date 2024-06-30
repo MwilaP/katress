@@ -12,33 +12,46 @@ import GroupMatches from "./GroupMatches";
 const TopTab = createMaterialTopTabNavigator();
 const GroupStack = createStackNavigator();
 
-const Groups = ({navigation}) => (
+const Groups = ({ navigation }) => (
   <GroupStack.Navigator>
-    <TopTab.Screen options={{
-      headerShown: false
-    }} name="Table" component={GroupsScreen} />
+    <TopTab.Screen
+      options={{
+        headerShown: false,
+      }}
+      name="Table"
+      component={GroupsScreen}
+    />
     <TopTab.Screen name="GroupMatches" component={GroupMatches} />
-
-
   </GroupStack.Navigator>
 );
 
-const TournamentScreen = ({ navigation }) => (
-  <TopTab.Navigator
-    screenOptions={{
-      tabBarAllowFontScaling: true,
-      tabBarScrollEnabled: true,
-      tabBarLabelStyle: {
-        fontSize: 13,
-      },
-    }}
-  >
-    <TopTab.Screen name="information" component={TournamentName} />
-    <TopTab.Screen name="Participants" component={Participants} />
-    <TopTab.Screen name="Table" component={GroupsScreen} />
-    <TopTab.Screen name="Matches" component={MatchScreen} />
-  </TopTab.Navigator>
-);
+const TournamentScreen = ({ navigation, route }) => {
+  const data = route?.params?.tournament ? route?.params?.tournament : "";
+  return (
+    <TopTab.Navigator
+      screenOptions={{
+        tabBarAllowFontScaling: true,
+        tabBarScrollEnabled: true,
+        tabBarLabelStyle: {
+          fontSize: 13,
+        },
+      }}
+    >
+      <TopTab.Screen name="information">
+        {(props) => <TournamentName {...props} tournament={data} />}
+      </TopTab.Screen>
+      <TopTab.Screen name="Participants">
+        {(props) => <Participants {...props} tournament={data} />}
+      </TopTab.Screen>
+      <TopTab.Screen name="Table">
+        {(props) => <GroupsScreen {...props} tournament={data} />}
+      </TopTab.Screen>
+      <TopTab.Screen name="Matches">
+        {(props) => <MatchScreen {...props} tournament={data} />}
+      </TopTab.Screen>
+    </TopTab.Navigator>
+  );
+};
 export default TournamentScreen;
 
 const styles = StyleSheet.create({});

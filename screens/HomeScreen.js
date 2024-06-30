@@ -1,4 +1,5 @@
 import {
+  FlatList,
   Image,
   Pressable,
   ScrollView,
@@ -6,16 +7,39 @@ import {
   Text,
   View,
 } from "react-native";
-import React from "react";
+import React, { useCallback, useLayoutEffect, useState } from "react";
+import { useFocusEffect, useTheme } from "@react-navigation/native";
+import axios from "axios";
+import serverUrl from "../hooks/server";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const HomeScreen = ({navigation}) => {
-  const Tournament = ({ tournament }) => {
+const HomeScreen = ({ navigation }) => {
+  const [tournaments, setTournments] = useState("");
+  const [loading, setLoading] = useState("");
+
+  useFocusEffect(
+    useCallback(() => {
+      const getTournaments = async () => {
+        try {
+          const tournament = await axios.get(`${serverUrl}/tournaments`);
+          if (tournament.data) {
+            setTournments(tournament.data);
+          }
+        } catch (error) {}
+      };
+      getTournaments();
+      setLoading(false);
+    }, [])
+  );
+
+  const Tournament = ({ item }) => {
     return (
       <View
         style={{
           backgroundColor: "white",
-          width: "95%",
+          //width: "95%",
           height: 150,
+          marginBottom: 5,
 
           borderRadius: 10,
           marginTop: 10,
@@ -30,9 +54,13 @@ const HomeScreen = ({navigation}) => {
           backgroundColor: "#fff",
         }}
       >
-        <Pressable onPress={()=> navigation.navigate('Tournament Details')}>
+        <Pressable
+          onPress={() =>
+            navigation.navigate("Tournament Details", { tournament: item })
+          }
+        >
           <View style={{ padding: 10 }}>
-            <Text style={{ fontWeight: "700", padding: 5 }}>KATRESS</Text>
+            <Text style={{ fontWeight: "700", padding: 5 }}>{item?.name}</Text>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Image
                 style={{
@@ -45,7 +73,9 @@ const HomeScreen = ({navigation}) => {
                 <Text style={{ fontWeight: "700", color: "grey" }}>
                   Participants
                 </Text>
-                <Text style={{ fontWeight: "700" }}>8 Players</Text>
+                <Text style={{ fontWeight: "700" }}>
+                  {item?.players.length}
+                </Text>
               </View>
             </View>
           </View>
@@ -54,15 +84,14 @@ const HomeScreen = ({navigation}) => {
     );
   };
   return (
-    <ScrollView
-      style={{ flex: 1, paddingHorizontal: 10, backgroundColor: "white" }}
-    >
-      <View style={{ alignItems: "center", flex: 1 }}>
-        {Array.from({ length: 6 }).map((_, index) => (
-          <Tournament />
-        ))}
-      </View>
-    </ScrollView>
+    <SafeAreaView style={{ flex: 1 }}>
+      <FlatList
+        contentContainerStyle={{ paddingHorizontal: 10 }}
+        data={tournaments}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }) => <Tournament item={item} />}
+      />
+    </SafeAreaView>
   );
 };
 

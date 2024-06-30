@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,10 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import { useFocusEffect, useTheme } from "@react-navigation/native";
+import axios from "axios";
+import serverUrl from "../hooks/server";
+import { useSocket } from "../hooks/SocketProvider";
 const gen = {
   A: [
     { name: "Nathan" },
@@ -68,6 +72,7 @@ const data = [
 
 const initialStats = (group) =>
   group?.reduce((acc, player) => {
+    console.log("ACC", acc);
     acc[player.name] = {
       points: 0,
       gamesPlayed: 0,
@@ -112,7 +117,7 @@ function createRandomGroups(array, groupSize) {
   return groups;
 }
 
-const GroupsScreen = ({ navigation }) => {
+const GroupsScreen = ({ navigation, tournament }) => {
   const [groups, setGroups] = useState("");
   const [generatedGroups, setGenerateGroups] = useState("");
   const [dumy, setDumy] = useState("");
@@ -134,22 +139,80 @@ const GroupsScreen = ({ navigation }) => {
   const [player1Score, setPlayer1Score] = useState("");
   const [player2Score, setPlayer2Score] = useState("");
   const [loading, setLoading] = useState(false);
+  const [participants, setParticipants] = useState("");
+  const [groupsLoading, setGroupsLoading] = useState(true);
+  const { socket } = useSocket();
 
-  useEffect(() => {
-    console.log("GENERATE", dumy);
-    if (dumy) {
-      setStats({
-        A: initialStats(generatedGroups.A),
-        B: initialStats(generatedGroups.B),
-        C: initialStats(generatedGroups.C),
-        D: initialStats(generatedGroups.D),
-      });
-      setGenerateGroups(dumy);
-      setTimeout(() => {
+  useFocusEffect(
+    useCallback(() => {
+      const getPlayers = async () => {
+        try {
+          if (tournament) {
+            console.log("okay");
+            const players = await axios.get(
+              `${serverUrl}/tournaments/${tournament._id}/players`
+            );
+            if (players.data) {
+              setParticipants(players.data);
+              //setGroupsLoading(false);
+            } else {
+              //setGroupsLoading(false);
+            }
+          }
+        } catch (error) {}
+      };
+      getPlayers();
+      //setGroupsLoading(false);
+    }, [])
+  );
+  useFocusEffect(
+    useCallback(() => {
+      const getGroups = async () => {
+        console.log("running");
+        socket.emit("groups", tournament._id);
+        socket.on("groups", (data) => {
+          //const islength = [...data];
+          //console.log(islength.length);
+          if (Object.keys(data).length > 0) {
+            setGroups(data);
+            // console.log("socketdata", data);
+            setGroupsLoading(false);
+          }
+          setGroupsLoading(false);
+        });
+      };
+      getGroups();
+    }, [])
+  );
+
+  function isEmptyObject(obj) {
+    return Object.keys(obj).length > 0;
+  }
+  const sendIdsToBackend = async () => {
+    try {
+      // Extract _id from each object in the data
+      const idsObject = {};
+      for (const group in generatedGroups) {
+        if (generatedGroups.hasOwnProperty(group)) {
+          idsObject[group] = generatedGroups[group].map((item) => item._id);
+        }
+      }
+      setLoading(true);
+      const response = await axios.post(
+        `${serverUrl}/tournaments/${tournament._id}/group`,
+        { data: idsObject }
+      );
+      if (response.data) {
+        console.log("Response", response.data);
+        setGroups(response.data);
+        setGenerateGroups("");
         setLoading(false);
-      }, 2000);
+      }
+    } catch (error) {
+      console.error("Error sending IDs to backend:", error);
+      setLoading(false);
     }
-  }, [generatedGroups, dumy]);
+  };
 
   const matches = generateRoundRobinMatches(groups[selectedGroup]);
 
@@ -234,24 +297,48 @@ const GroupsScreen = ({ navigation }) => {
     }
   };
 
-  const renderTable = (groupName) => {
-    const sortedPlayers = Object.keys(stats[groupName]).sort((a, b) => {
-      const playerA = stats[groupName][a];
-      const playerB = stats[groupName][b];
-      return (
-        playerB.points - playerA.points ||
-        playerB.scoreFor -
-          playerB.scoreAgainst -
-          (playerA.scoreFor - playerA.scoreAgainst) ||
-        (playerB.headToHead[a] || 0) - (playerA.headToHead[b] || 0)
-      );
-    });
+  const RenderTable = ({ groupName, group }) => {
+    const groupA = group[groupName];
+
+   // console.log('ID', groupA[0].group_id)
+
+    const sortedPlayers = groups
+      ? groupA.sort((a, b) => {
+          return (
+            b.data.points - a.data.points ||
+            b.data.scoreFor -
+              b.data.scoreAgainst -
+              (a.data.scoreFor - a.data.scoreAgainst) ||
+            (b.data.headToHead[a.data.name] || 0) -
+              (a.data.headToHead[b.data.name] || 0)
+          );
+        })
+      : groupA.sort((a, b) => {
+          return (
+            b.points - a.points ||
+            b.scoreFor - b.scoreAgainst - (a.scoreFor - a.scoreAgainst) ||
+            (b.headToHead[a.name] || 0) - (a.headToHead[b.name] || 0)
+          );
+        });
+
+    // Print sorted players
+    const player = groups
+      ? sortedPlayers.map((player) => {
+          return player.data;
+        })
+      : sortedPlayers.map((player) => {
+          //console.log('player',player)
+          return player;
+        });
+
+    //console.log(`group ${groupName}`, player[1]);
 
     return (
       <Pressable
         onPress={() =>
           navigation.navigate("GroupMatches", {
-            matches: generateRoundRobinMatches(groups[groupName]),
+        tournament: tournament._id,
+        group: groupA[0].group_id,
           })
         }
         style={styles.table}
@@ -266,38 +353,37 @@ const GroupsScreen = ({ navigation }) => {
           <Text style={[styles.cell, styles.headerCell]}>SF</Text>
           <Text style={[styles.cell, styles.headerCell]}>SA</Text>
         </View>
-        {sortedPlayers.map((playerName) => (
-          <View key={playerName} style={styles.row}>
-            <Text style={styles.nameCell}>{playerName}</Text>
-            <Text style={styles.cell}>
-              {stats[groupName][playerName].points}
-            </Text>
-            <Text style={styles.cell}>
-              {stats[groupName][playerName].gamesPlayed}
-            </Text>
-            <Text style={styles.cell}>
-              {stats[groupName][playerName].gamesWon}
-            </Text>
-            <Text style={styles.cell}>
-              {stats[groupName][playerName].gamesLost}
-            </Text>
-            <Text style={styles.cell}>
-              {stats[groupName][playerName].scoreFor}
-            </Text>
-            <Text style={styles.cell}>
-              {stats[groupName][playerName].scoreAgainst}
-            </Text>
+
+        {player.map((player, index) => (
+          <View key={index} style={styles.row}>
+            <Text style={styles.nameCell}>{player?.name}</Text>
+            <Text style={styles.cell}>{player?.points}</Text>
+            <Text style={styles.cell}>{player?.gamesPlayed}</Text>
+            <Text style={styles.cell}>{player?.gamesWon}</Text>
+            <Text style={styles.cell}>{player?.gamesLost}</Text>
+            <Text style={styles.cell}>{player?.scoreFor}</Text>
+            <Text style={styles.cell}>{player?.scoreAgainst}</Text>
           </View>
         ))}
       </Pressable>
     );
   };
 
+  if (groupsLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="blue" />
+      </View>
+    );
+  }
+
   if (groups) {
     return (
       <ScrollView contentContainerStyle={styles.container}>
         {Object.keys(groups)?.map((groupName) => (
-          <View key={groupName}>{renderTable(groupName)}</View>
+          <View key={groupName}>
+            <RenderTable groupName={groupName} group={groups} />
+          </View>
         ))}
         <Text style={styles.header}>Record Match Result</Text>
         <Picker
@@ -376,11 +462,17 @@ const GroupsScreen = ({ navigation }) => {
             <View style={{ flex: 1, backgroundColor: "white", padding: 10 }}>
               <ScrollView style={{ flex: 1 }}>
                 {Object?.keys(generatedGroups)?.map((groupName) => (
-                  <View key={groupName}>{renderTable(groupName)}</View>
+                  <View key={groupName}>
+                    <RenderTable
+                      groupName={groupName}
+                      group={generatedGroups}
+                    />
+                  </View>
                 ))}
               </ScrollView>
               <View style={{ alignItems: "center" }}>
                 <Pressable
+                  onPress={() => sendIdsToBackend()}
                   style={{
                     backgroundColor: "green",
                     width: "60%",
@@ -390,7 +482,9 @@ const GroupsScreen = ({ navigation }) => {
                     borderRadius: 10,
                   }}
                 >
-                  <Text style={{color: 'white', fontWeight: '700'}}>SAVE</Text>
+                  <Text style={{ color: "white", fontWeight: "700" }}>
+                    SAVE
+                  </Text>
                 </Pressable>
               </View>
             </View>
@@ -408,7 +502,8 @@ const GroupsScreen = ({ navigation }) => {
               <TouchableOpacity
                 onPress={() => {
                   setLoading(true);
-                  setDumy(createRandomGroups(data, 5));
+                  setGenerateGroups(createRandomGroups(participants, 5));
+                  setLoading(false);
                 }}
               >
                 <Text style={{ fontSize: 17, fontWeight: "700" }}>
@@ -428,7 +523,7 @@ export default GroupsScreen;
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    backgroundColor: "green",
+    //backgroundColor: "green",
   },
   table: {
     marginBottom: 20,

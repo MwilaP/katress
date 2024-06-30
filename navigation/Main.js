@@ -91,8 +91,7 @@ const Main = () => {
           ),
 
           tabBarStyle: ((route) => {
-            const routeName =
-              getFocusedRouteNameFromRoute(route) ?? "Home";
+            const routeName = getFocusedRouteNameFromRoute(route) ?? "Home";
             if (routeName !== "Home") {
               return { display: "none" };
             }
