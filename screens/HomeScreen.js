@@ -6,16 +6,24 @@ import {
   StyleSheet,
   Text,
   View,
+  Modal,
+  TextInput,
+  Button,
+  Alert
 } from "react-native";
 import React, { useCallback, useLayoutEffect, useState } from "react";
 import { useFocusEffect, useTheme } from "@react-navigation/native";
 import axios from "axios";
 import serverUrl from "../hooks/server";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { FAB } from 'react-native-paper';
 
 const HomeScreen = ({ navigation }) => {
   const [tournaments, setTournments] = useState("");
   const [loading, setLoading] = useState("");
+  const [createModalVisible, setCreateModalVisible] = useState(false);
+
+
 
   useFocusEffect(
     useCallback(() => {
@@ -31,6 +39,53 @@ const HomeScreen = ({ navigation }) => {
       setLoading(false);
     }, [])
   );
+
+
+  const CreateTournamentModal = ({ visible, onClose, onCreateTournament }) => {
+    const [name, setName] = useState('');
+    const [date, setDate] = useState('');
+    const [loading, setLoading] = useState(false)
+  
+    const handleCreate = async () => {
+      try {
+        setLoading(true)
+
+        const tourna = await axios.post(`${serverUrl}/tournaments/`,{name: name})
+        if(tourna.status == 201){
+          setTournments([tourna.data, ...tournaments])
+          setLoading(false)
+        }
+        
+      } catch (error) {
+        console.log(error)
+
+        Alert.alert('error', 'sometthing went wrong')
+        
+      }
+    };
+  
+    return (
+      <Modal visible={visible} animationType="slide" transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalHeader}>Create New Tournament</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Tournament Name"
+              value={name}
+              onChangeText={setName}
+            />
+            
+            <View style={{padding: 2}}>
+            <Button  title="Create" onPress={handleCreate} />  
+            </View>
+
+            
+          </View>
+        </View>
+      </Modal>
+    );
+  };
 
   const Tournament = ({ item }) => {
     return (
@@ -84,17 +139,73 @@ const HomeScreen = ({ navigation }) => {
     );
   };
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <FlatList
-        contentContainerStyle={{ paddingHorizontal: 10 }}
-        data={tournaments}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item }) => <Tournament item={item} />}
+    <SafeAreaView style={{flex: 1}}>
+
+   
+    <View style={styles.container}>
+    <Text style={styles.header}>MPM Tournaments</Text>
+    <FlatList
+      data={tournaments}
+      renderItem={({ item }) => <Tournament tournament={item} />}
+      keyExtractor={(item) => item.id}
+    />
+    <FAB
+        style={styles.fab}
+        icon="plus"
+        onPress={() => setCreateModalVisible(true)}
       />
-    </SafeAreaView>
+      <CreateTournamentModal
+        visible={createModalVisible}
+        onClose={() => setCreateModalVisible(false)}
+       // onCreateTournament={createTournament}
+      />
+  </View>
+  </SafeAreaView>
   );
 };
 
 export default HomeScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,},
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+      backgroundColor: 'white',
+      padding: 20,
+      borderRadius: 10,
+      elevation: 5,
+      width: '80%',
+    },
+    modalHeader: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: '#ddd',
+      padding: 10,
+      marginBottom: 10,
+      borderRadius: 5,
+    },
+
+});

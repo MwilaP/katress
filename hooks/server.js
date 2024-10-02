@@ -1,2 +1,2 @@
-const serverUrl = "http://192.168.43.151:3000";
+const serverUrl = "https://katressserver2.onrender.com";
 export default serverUrl;

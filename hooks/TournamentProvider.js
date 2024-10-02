@@ -6,6 +6,7 @@ const TournmentContext = createContext();
 const TournamentProvider = ({ children }) => {
   const [tournament, setTournment] = useState("");
   const [participants, setParticipants] = useState("");
+  
   return <TournmentContext.Provider>{children}</TournmentContext.Provider>;
 };
 export function useSocket() {
