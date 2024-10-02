@@ -148,9 +148,11 @@ const GroupsScreen = ({ navigation, tournament }) => {
     }
 
     try {
+      console.log('group', selectedGroupForNewParticipant, 'player: ', selectedParticipant )
+
       setGroupsLoading(true);
       const response = await axios.post(`${serverUrl}/tournaments/${tournament._id}/addParticipant`, {
-        participantId: selectedParticipant,
+        playerId: selectedParticipant,
         group: selectedGroupForNewParticipant,
       });
 
@@ -270,30 +272,26 @@ const GroupsScreen = ({ navigation, tournament }) => {
     });
   };
 
-  const handleRecordResult = () => {
-    if (selectedMatch && player1Score !== "" && player2Score !== "") {
-      const [player1, player2] = selectedMatch;
-      const p1Score = parseInt(player1Score, 10);
-      const p2Score = parseInt(player2Score, 10);
-
-      if (
-        recordedMatches[selectedGroup].find(
-          (match) =>
-            match.player1 === player1.name && match.player2 === player2.name
-        )
-      ) {
-        Alert.alert("Error", "This match has already been recorded.");
-        return;
+  function getGroupInfo(inputObj) {
+    // Initialize an empty array to store the result for all keys
+    let result = [];
+  
+    // Loop through all keys in the input object
+    for (let key in inputObj) {
+      if (inputObj.hasOwnProperty(key)) {
+        // Extract the first group_id from the array under the key
+        const group_id = inputObj[key][0].group_id;
+  
+        // Push the result object for each key into the array
+        result.push({
+          name: key,
+          groupid: group_id
+        });
       }
-
-      const winner = p1Score > p2Score ? player1.name : player2.name;
-
-      updateStats(selectedGroup, player1, player2, winner, p1Score, p2Score);
-      setSelectedMatch(null);
-      setPlayer1Score("");
-      setPlayer2Score("");
     }
-  };
+  
+    return result;
+  }
 
   const RenderTable = ({ groupName, group, showGroupName }) => {
     const groupA = group[groupName];
@@ -367,6 +365,8 @@ const GroupsScreen = ({ navigation, tournament }) => {
 
   if (groups) {
     const groupKeys = Object.keys(groups);
+    const newGroup = getGroupInfo(groups)
+    console.log(newGroup)
     const showGroupNames = groupKeys.length > 1;
     const ungroupedParticipants = getUngroupedParticipants();
     return (
@@ -398,11 +398,11 @@ const GroupsScreen = ({ navigation, tournament }) => {
             style={styles.picker}
           >
             <Picker.Item label="Select Group" value="" />
-            {groupKeys.map((groupName) => (
+            {newGroup.map((group) => (
               <Picker.Item
-                key={groupName}
-                label={`Group ${groupName}`}
-                value={groupName}
+                key={group.groupid}
+                label={`Group ${group.name}`}
+                value={group.groupid}
               />
             ))}
           </Picker>
