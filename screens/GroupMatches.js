@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View, TextInput, Alert } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View, TextInput, Alert, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import { BottomModal, ModalContent, ModalButton } from "react-native-modals";
@@ -12,6 +12,7 @@ const GroupMatches = ({ route }) => {
   const [score2, setScore2] = useState("");
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [updateloading, setUpdateloading] = useState(false)
 
   useFocusEffect(
     useCallback(() => {
@@ -55,6 +56,7 @@ const GroupMatches = ({ route }) => {
     if (!selectedMatch) return;
 
     try {
+      setUpdateloading(true)
       //console.log('match: ', selectedMatch._id)
       const response = await axios.post(
         `${serverUrl}/tournaments/${tournament}/matches/`,
@@ -65,15 +67,18 @@ const GroupMatches = ({ route }) => {
         }
       );
 
-      if (response.status == 201) {
+      if (response.status = 201) {
         // Update the local state with the new scores
         getMatches()
         setModalVisible(false);
         Alert.alert("Success", "Match score updated successfully!");
+        setUpdateloading(false)
+
       }
     } catch (error) {
       console.error("Error updating match score:", error);
       Alert.alert("Error", "Failed to update match score. Please try again.");
+      setUpdateloading(false)
     }
   };
 
@@ -139,19 +144,25 @@ const GroupMatches = ({ route }) => {
                   placeholder="Score"
                 />
               </View>
+              
               <View style={styles.modalButtonsContainer}>
-                <ModalButton
-                  text="Cancel"
-                  onPress={() => setModalVisible(false)}
-                  style={styles.cancelButton}
-                  textStyle={styles.buttonText}
-                />
-                <ModalButton
-                  text="Update"
-                  onPress={updateMatchScore}
-                  style={styles.updateButton}
-                  textStyle={styles.buttonText}
-                />
+              {
+                updateloading ? (
+                  <ActivityIndicator/>
+                ) : (
+                  <><ModalButton
+                        text="Cancel"
+                        onPress={() => setModalVisible(false)}
+                        style={styles.cancelButton}
+                        textStyle={styles.buttonText} /><ModalButton
+                          text="Update"
+                          onPress={updateMatchScore}
+                          style={styles.updateButton}
+                          textStyle={styles.buttonText} /></>
+                  
+                )
+              }
+                
               </View>
             </>
           )}
