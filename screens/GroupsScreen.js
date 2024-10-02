@@ -154,7 +154,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
             );
             if (players.data) {
               setParticipants(players.data);
-              //setGroupsLoading(false);
+              setGroupsLoading(false);
             } else {
               //setGroupsLoading(false);
             }
@@ -502,7 +502,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
               <TouchableOpacity
                 onPress={() => {
                   setLoading(true);
-                  setGenerateGroups(createRandomGroups(participants, 5));
+                  setGenerateGroups(createRandomGroups(participants, 8));
                   setLoading(false);
                 }}
               >
