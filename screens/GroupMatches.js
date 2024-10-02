@@ -35,24 +35,39 @@ const GroupMatches = ({ route }) => {
   );
 
   const updateMatchScore = async () => {
+
+    const getMatches = async () => {
+      try {
+        if (tournament) {
+          const response = await axios.get(
+            `${serverUrl}/tournaments/${tournament}/matches/${group}`
+          );
+          if (response.data) {
+            setMatches(response.data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching matches:", error);
+        Alert.alert("Error", "Failed to fetch matches. Please try again.");
+      }
+    };
+
     if (!selectedMatch) return;
 
     try {
-      const response = await axios.put(
-        `${serverUrl}/tournaments/${tournament}/matches/${selectedMatch.id}`,
-        {
+      //console.log('match: ', selectedMatch._id)
+      const response = await axios.post(
+        `${serverUrl}/tournaments/${tournament}/matches/`,
+        { 
+          matchId: selectedMatch._id,
           player1Score: parseInt(score1),
           player2Score: parseInt(score2),
         }
       );
 
-      if (response.data) {
+      if (response.status == 201) {
         // Update the local state with the new scores
-        setMatches(matches.map(match => 
-          match.id === selectedMatch.id 
-            ? { ...match, player1Score: score1, player2Score: score2 } 
-            : match
-        ));
+        getMatches()
         setModalVisible(false);
         Alert.alert("Success", "Match score updated successfully!");
       }
