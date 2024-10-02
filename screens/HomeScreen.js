@@ -20,7 +20,7 @@ import { FAB } from 'react-native-paper';
 
 const HomeScreen = ({ navigation }) => {
   const [tournaments, setTournments] = useState("");
-  const [loading, setLoading] = useState("");
+  const [loading, setLoading] = useState(true);
   const [createModalVisible, setCreateModalVisible] = useState(false);
 
 
@@ -32,6 +32,7 @@ const HomeScreen = ({ navigation }) => {
           const tournament = await axios.get(`${serverUrl}/tournaments`);
           if (tournament.data) {
             setTournments(tournament.data);
+            console.log(tournament.data)
           }
         } catch (error) {}
       };
@@ -88,6 +89,7 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const Tournament = ({ item }) => {
+    console.log('Items: ', item)
     return (
       <View
         style={{
@@ -129,7 +131,7 @@ const HomeScreen = ({ navigation }) => {
                   Participants
                 </Text>
                 <Text style={{ fontWeight: "700" }}>
-                  {item?.players.length}
+                  {item?.players?.length}
                 </Text>
               </View>
             </View>
@@ -146,8 +148,8 @@ const HomeScreen = ({ navigation }) => {
     <Text style={styles.header}>MPM Tournaments</Text>
     <FlatList
       data={tournaments}
-      renderItem={({ item }) => <Tournament tournament={item} />}
-      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => <Tournament item={item} />}
+      keyExtractor={(item) => item._id}
     />
     <FAB
         style={styles.fab}
