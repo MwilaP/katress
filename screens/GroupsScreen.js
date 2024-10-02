@@ -16,6 +16,7 @@ import { useFocusEffect, useTheme } from "@react-navigation/native";
 import axios from "axios";
 import serverUrl from "../hooks/server";
 import { useSocket } from "../hooks/SocketProvider";
+import { Modal, ModalContent, SlideAnimation } from "react-native-modals";
 
   
 
@@ -70,6 +71,9 @@ const GroupsScreen = ({ navigation, tournament }) => {
   const [groups, setGroups] = useState("");
   const [generatedGroups, setGenerateGroups] = useState("");
   const [dumy, setDumy] = useState("");
+  const [number, setNumber] = useState(0)
+  const [generate, setGenerate] = useState(false)
+  const [numberOfPlayers, setNumberOfPlayers] = useState('');
 
   const [stats, setStats] = useState("");
 
@@ -214,6 +218,31 @@ const GroupsScreen = ({ navigation, tournament }) => {
     return participants.filter(participant => !groupedSet.has(participant._id));
   }, [groups, participants]);
   
+
+  const handleConfirm = () => {
+
+    setLoading(true)
+  
+    try {
+      if (numberOfPlayers > 0) {
+        setGenerateGroups(createRandomGroups(participants, numberOfPlayers))
+        setLoading(false)
+  }
+ 
+  else{
+    Alert.alert('number error', 'please input a number')
+    setLoading(false)
+  }
+      
+      
+    } catch (error) {
+
+      console.log(error)
+      Alert.alert('error', 'something went wrong. please try again')
+      setLoading(false)
+      
+    }
+  }
   
 
   const updateStats = (
@@ -448,19 +477,56 @@ const GroupsScreen = ({ navigation, tournament }) => {
               </TouchableOpacity>
             </ScrollView>
           ) : (
-            <View style={styles.noGroupsContent}>
-              <Text style={styles.noGroupsText}>No Groups</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setLoading(true);
-                  setGenerateGroups(createRandomGroups(participants, 8));
-                  setLoading(false);
-                }}
-                style={styles.generateButton}
-              >
-                <Text style={styles.generateButtonText}>Generate</Text>
-              </TouchableOpacity>
+            <><View style={styles.noGroupsContent}>
+                  <Text style={styles.noGroupsText}>No Groups</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      //setLoading(true);
+                      setGenerate(true)
+                     // setGenerateGroups(createRandomGroups(participants, 8));
+                      //setLoading(false);
+                    } }
+                    style={styles.generateButton}
+                  >
+                    <Text style={styles.generateButtonText}>Generate</Text>
+                  </TouchableOpacity>
+                </View>
+                <Modal
+        visible={generate}
+        onSwipeOut={(event) => {
+          setGenerate(false);
+        }}
+        modalAnimation={new SlideAnimation({
+          slideFrom: 'bottom',
+        })}
+      >
+        <ModalContent>
+          <View style={{ padding: 20 }}>
+            <Text style={{ fontSize: 18, marginBottom: 10 }}>
+              Set the Number of Players Per Group
+            </Text>
+            <TextInput
+              keyboardType="numeric"
+              placeholder="Enter number of players"
+              value={numberOfPlayers}
+              onChangeText={setNumberOfPlayers}
+              style={{
+                borderWidth: 1,
+                borderColor: '#ccc',
+                borderRadius: 5,
+                padding: 10,
+                marginBottom: 20,
+              }}
+            />
+            <Button title="Confirm" onPress={handleConfirm} />
+            <View style={{padding: 3, margin: 2}}>
+            <Button title="Cancel" onPress={() => setGenerate(false)} />
+
             </View>
+            
+          </View>
+        </ModalContent>
+      </Modal></>
           )}
         </View>
       )}

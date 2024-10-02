@@ -55,11 +55,12 @@ const HomeScreen = ({ navigation }) => {
         if(tourna.status == 201){
           setTournments([tourna.data, ...tournaments])
           setLoading(false)
+          setCreateModalVisible(false)
         }
         
       } catch (error) {
         console.log(error)
-
+        setCreateModalVisible(false)
         Alert.alert('error', 'sometthing went wrong')
         
       }
@@ -156,6 +157,7 @@ const HomeScreen = ({ navigation }) => {
         icon="plus"
         onPress={() => setCreateModalVisible(true)}
         color="white"
+        
       />
       <CreateTournamentModal
         visible={createModalVisible}
