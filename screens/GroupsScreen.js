@@ -297,11 +297,8 @@ const GroupsScreen = ({ navigation, tournament }) => {
     }
   };
 
-  const RenderTable = ({ groupName, group }) => {
+  const RenderTable = ({ groupName, group, showGroupName }) => {
     const groupA = group[groupName];
-
-   // console.log('ID', groupA[0].group_id)
-
     const sortedPlayers = groups
       ? groupA.sort((a, b) => {
           return (
@@ -321,42 +318,34 @@ const GroupsScreen = ({ navigation, tournament }) => {
           );
         });
 
-    // Print sorted players
     const player = groups
-      ? sortedPlayers.map((player) => {
-          return player.data;
-        })
-      : sortedPlayers.map((player) => {
-          //console.log('player',player)
-          return player;
-        });
-
-    //console.log(`group ${groupName}`, player[1]);
+      ? sortedPlayers.map((player) => player.data)
+      : sortedPlayers;
 
     return (
       <Pressable
         onPress={() =>
           navigation.navigate("GroupMatches", {
-        tournament: tournament._id,
-        group: groupA[0].group_id,
+            tournament: tournament._id,
+            group: groupA[0].group_id,
           })
         }
         style={styles.table}
       >
-        <Text style={styles.header}>Group {groupName}</Text>
-        <View style={styles.row}>
-          <Text style={[styles.nameCell, styles.headerCell]}>Name</Text>
-          <Text style={[styles.cell, styles.headerCell]}>Pts</Text>
-          <Text style={[styles.cell, styles.headerCell]}>GP</Text>
-          <Text style={[styles.cell, styles.headerCell]}>GW</Text>
-          <Text style={[styles.cell, styles.headerCell]}>GL</Text>
-          <Text style={[styles.cell, styles.headerCell]}>SF</Text>
-          <Text style={[styles.cell, styles.headerCell]}>SA</Text>
+        {showGroupName && <Text style={styles.groupHeader}>Group {groupName}</Text>}
+        <View style={styles.headerRow}>
+          <Text style={[styles.headerCell, { flex: 2 }]}>Name</Text>
+          <Text style={styles.headerCell}>Pts</Text>
+          <Text style={styles.headerCell}>GP</Text>
+          <Text style={styles.headerCell}>GW</Text>
+          <Text style={styles.headerCell}>GL</Text>
+          <Text style={styles.headerCell}>SF</Text>
+          <Text style={styles.headerCell}>SA</Text>
         </View>
 
         {player.map((player, index) => (
-          <View key={index} style={styles.row}>
-            <Text style={styles.nameCell}>{player?.name}</Text>
+          <View key={index} style={[styles.row, index % 2 === 0 ? styles.evenRow : styles.oddRow]}>
+            <Text style={[styles.cell, { flex: 2 }]}>{player?.name}</Text>
             <Text style={styles.cell}>{player?.points}</Text>
             <Text style={styles.cell}>{player?.gamesPlayed}</Text>
             <Text style={styles.cell}>{player?.gamesWon}</Text>
@@ -369,146 +358,64 @@ const GroupsScreen = ({ navigation, tournament }) => {
     );
   };
 
+
   if (groupsLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="blue" />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3498db" />
       </View>
     );
   }
 
   if (groups) {
+    const groupKeys = Object.keys(groups);
+    const showGroupNames = groupKeys.length > 1;
     return (
       <ScrollView contentContainerStyle={styles.container}>
         {Object.keys(groups)?.map((groupName) => (
           <View key={groupName}>
-            <RenderTable groupName={groupName} group={groups} />
+             <RenderTable groupName={groupName} group={groups} showGroupName={showGroupNames} />
           </View>
         ))}
-        <Text style={styles.header}>Record Match Result</Text>
-        <Picker
-          selectedValue={selectedGroup}
-          onValueChange={(itemValue) => setSelectedGroup(itemValue)}
-          style={styles.picker}
-        >
-          {Object.keys(groups).map((groupName) => (
-            <Picker.Item
-              key={groupName}
-              label={`Group ${groupName}`}
-              value={groupName}
-            />
-          ))}
-        </Picker>
-
-        <Picker
-          selectedValue={selectedMatch}
-          onValueChange={(itemValue) => setSelectedMatch(itemValue)}
-          style={styles.picker}
-        >
-          <Picker.Item label="Select Match" value={null} />
-          {matches.map((match, index) => (
-            <Picker.Item
-              key={index}
-              label={`${match[0].name} vs ${match[1].name}`}
-              value={match}
-            />
-          ))}
-        </Picker>
-
-        {selectedMatch && (
-          <View>
-            <Text style={styles.label}>
-              Enter scores for {selectedMatch[0].name} vs{" "}
-              {selectedMatch[1].name}:
-            </Text>
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder={`${selectedMatch[0].name}'s score`}
-              value={player1Score}
-              onChangeText={setPlayer1Score}
-            />
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder={`${selectedMatch[1].name}'s score`}
-              value={player2Score}
-              onChangeText={setPlayer2Score}
-            />
-          </View>
-        )}
-
-        <Button
-          title="Record Result"
-          onPress={handleRecordResult}
-          disabled={
-            !selectedMatch || player1Score === "" || player2Score === ""
-          }
-        />
+        
       </ScrollView>
     );
   }
+
   return (
-    <View style={{ flex: 1, backgroundColor: "white" }}>
+    <View style={styles.container}>
       {loading ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color="#0000ff" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#3498db" />
         </View>
       ) : (
-        <View style={{ flex: 1 }}>
+        <View style={styles.noGroupsContainer}>
           {generatedGroups ? (
-            <View style={{ flex: 1, backgroundColor: "white", padding: 10 }}>
-              <ScrollView style={{ flex: 1 }}>
-                {Object?.keys(generatedGroups)?.map((groupName) => (
-                  <View key={groupName}>
-                    <RenderTable
-                      groupName={groupName}
-                      group={generatedGroups}
-                    />
-                  </View>
-                ))}
-              </ScrollView>
-              <View style={{ alignItems: "center" }}>
-                <Pressable
-                  onPress={() => sendIdsToBackend()}
-                  style={{
-                    backgroundColor: "green",
-                    width: "60%",
-                    height: 50,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    borderRadius: 10,
-                  }}
-                >
-                  <Text style={{ color: "white", fontWeight: "700" }}>
-                    SAVE
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
+            <ScrollView style={styles.generatedGroupsContainer}>
+              {Object.keys(generatedGroups)?.map((groupName) => (
+                <View key={groupName}>
+                  <RenderTable groupName={groupName} group={generatedGroups} />
+                </View>
+              ))}
+              <TouchableOpacity
+                onPress={() => sendIdsToBackend()}
+                style={styles.saveButton}
+              >
+                <Text style={styles.saveButtonText}>SAVE</Text>
+              </TouchableOpacity>
+            </ScrollView>
           ) : (
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <View style={{ padding: 20 }}>
-                <Text>No Groups</Text>
-              </View>
+            <View style={styles.noGroupsContent}>
+              <Text style={styles.noGroupsText}>No Groups</Text>
               <TouchableOpacity
                 onPress={() => {
                   setLoading(true);
                   setGenerateGroups(createRandomGroups(participants, 8));
                   setLoading(false);
                 }}
+                style={styles.generateButton}
               >
-                <Text style={{ fontSize: 17, fontWeight: "700" }}>
-                  Generate
-                </Text>
+                <Text style={styles.generateButtonText}>Generate</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -522,43 +429,161 @@ export default GroupsScreen;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
-    //backgroundColor: "green",
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#f5f5f5",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   table: {
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 5,
+    marginBottom: 24,
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  header: {
-    fontSize: 18,
+  groupHeader: {
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 10,
-    padding: 10,
+    color: "#2c3e50",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ecf0f1",
+  },
+  headerRow: {
+    flexDirection: "row",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: "#3498db",
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  headerCell: {
+    flex: 1,
+    fontWeight: "bold",
+    color: "#ffffff",
+    textAlign: "center",
   },
   row: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderColor: "#ddd",
+    borderBottomColor: "#ecf0f1",
+  },
+  evenRow: {
+    backgroundColor: "#f8f9fa",
+  },
+  oddRow: {
+    backgroundColor: "#ffffff",
   },
   cell: {
-    width: "10%",
+    flex: 1,
     textAlign: "center",
+    color: "#34495e",
   },
-  nameCell: {
-    width: "20%",
-    textAlign: "center",
+  recordMatchContainer: {
+    backgroundColor: "#ffffff",
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  headerCell: {
+  sectionHeader: {
+    fontSize: 20,
     fontWeight: "bold",
+    color: "#2c3e50",
+    marginBottom: 16,
   },
   picker: {
     height: 50,
+    marginBottom: 16,
+    backgroundColor: "#ecf0f1",
+    borderRadius: 8,
+  },
+  scoreInputContainer: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 16,
+    color: "#34495e",
+    marginBottom: 8,
+  },
+  scoreInputRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    borderColor: "#bdc3c7",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginHorizontal: 4,
+  },
+  button: {
+    backgroundColor: "#3498db",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  disabledButton: {
+    backgroundColor: "#bdc3c7",
+  },
+  buttonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  noGroupsContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noGroupsContent: {
+    alignItems: "center",
+  },
+  noGroupsText: {
+    fontSize: 18,
+    color: "#34495e",
+    marginBottom: 16,
+  },
+  generateButton: {
+    backgroundColor: "#3498db",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  generateButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  generatedGroupsContainer: {
+    flex: 1,
     width: "100%",
-    marginBottom: 10,
+  },
+  saveButton: {
+    backgroundColor: "#2ecc71",
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 24,
+  },
+  saveButtonText: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
