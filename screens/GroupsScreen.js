@@ -142,39 +142,30 @@ const GroupsScreen = ({ navigation, tournament }) => {
   }
 
   const addParticipant = async () => {
-    if (!newParticipantName || !selectedGroupForNewParticipant) {
-      Alert.alert("Error", "Please enter a name and select a group");
+    if (!selectedParticipant || !selectedGroupForNewParticipant) {
+      Alert.alert("Error", "Please select a participant and a group");
       return;
     }
 
     try {
-      setLoading(true);
+      setGroupsLoading(true);
       const response = await axios.post(`${serverUrl}/tournaments/${tournament._id}/addParticipant`, {
-        name: newParticipantName,
+        participantId: selectedParticipant,
         group: selectedGroupForNewParticipant,
       });
 
       if (response.data) {
-        // Update the local state with the new participant
-        setGroups((prevGroups) => ({
-          ...prevGroups,
-          [selectedGroupForNewParticipant]: [
-            ...prevGroups[selectedGroupForNewParticipant],
-            { name: newParticipantName, data: response.data },
-          ],
-        }));
-
-        // Clear the input fields
-        setNewParticipantName("");
-        setSelectedGroupForNewParticipant("");
-
-        Alert.alert("Success", "Participant added successfully");
+        // Refresh groups data
+        socket.emit("groups", tournament._id);
+        Alert.alert("Success", "Participant added to group successfully");
       }
     } catch (error) {
-      console.error("Error adding participant:", error);
-      Alert.alert("Error", "Failed to add participant");
+      console.error("Error adding participant to group:", error);
+      Alert.alert("Error", "Failed to add participant to group");
     } finally {
-      setLoading(false);
+      setGroupsLoading(false);
+      setSelectedParticipant("");
+      setSelectedGroupForNewParticipant("");
     }
   };
 
@@ -212,7 +203,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
     const groupedParticipants = Object.values(groups)
       .flatMap(group => group.map(player => player.data._id)); // Get _id from each player in each group
   
-    console.log('GROUPED: ', groupedParticipants);
+    //console.log('GROUPED: ', groupedParticipants);
   
     // Convert groupedParticipants to a Set for efficient lookup
     const groupedSet = new Set(groupedParticipants);
@@ -385,7 +376,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
              <RenderTable groupName={groupName} group={groups} showGroupName={showGroupNames} />
           </View>
         ))}
-        <View style={styles.addParticipantContainer}>
+         <View style={styles.addParticipantContainer}>
           <Text style={styles.sectionHeader}>Add Participant to Group</Text>
           <Picker
             selectedValue={selectedParticipant}
@@ -426,6 +417,8 @@ const GroupsScreen = ({ navigation, tournament }) => {
             <Text style={styles.buttonText}>Add to Group</Text>
           </TouchableOpacity>
         </View>
+
+        
 
         
       </ScrollView>
