@@ -155,6 +155,7 @@ const HomeScreen = ({ navigation }) => {
         style={styles.fab}
         icon="plus"
         onPress={() => setCreateModalVisible(true)}
+        color="white"
       />
       <CreateTournamentModal
         visible={createModalVisible}
