@@ -1,19 +1,17 @@
 import React, { useCallback, useState } from "react";
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View, TextInput, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
-import { BottomModal } from "react-native-modals";
+import { BottomModal, ModalContent, ModalButton } from "react-native-modals";
 import serverUrl from "../hooks/server";
-import { ActivityIndicator } from "react-native";
 
 const GroupMatches = ({ route }) => {
   const { tournament, group } = route.params;
   const [matches, setMatches] = useState([]);
   const [score1, setScore1] = useState("");
   const [score2, setScore2] = useState("");
-  const [matchId, setMatchId] = useState("");
-  const [addscore, setAddscore] = useState(false);
-  const [loading, setLoading] = useState(true)
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -25,26 +23,52 @@ const GroupMatches = ({ route }) => {
             );
             if (response.data) {
               setMatches(response.data);
-              setLoading(false)
             }
           }
         } catch (error) {
           console.error("Error fetching matches:", error);
-          setLoading(false)
-          Alert.alert('error', 'something went wrong')
+          Alert.alert("Error", "Failed to fetch matches. Please try again.");
         }
       };
       getMatches();
     }, [tournament, group])
   );
 
+  const updateMatchScore = async () => {
+    if (!selectedMatch) return;
+
+    try {
+      const response = await axios.put(
+        `${serverUrl}/tournaments/${tournament}/matches/${selectedMatch.id}`,
+        {
+          player1Score: parseInt(score1),
+          player2Score: parseInt(score2),
+        }
+      );
+
+      if (response.data) {
+        // Update the local state with the new scores
+        setMatches(matches.map(match => 
+          match.id === selectedMatch.id 
+            ? { ...match, player1Score: score1, player2Score: score2 } 
+            : match
+        ));
+        setModalVisible(false);
+        Alert.alert("Success", "Match score updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating match score:", error);
+      Alert.alert("Error", "Failed to update match score. Please try again.");
+    }
+  };
+
   const MatchItem = ({ match }) => (
     <Pressable
       onPress={() => {
-        setMatchId(match.id);
-        setScore1(match.player1Score);
-        setScore2(match.player2Score);
-        setAddscore(true);
+        setSelectedMatch(match);
+        setScore1(match.player1Score.toString());
+        setScore2(match.player2Score.toString());
+        setModalVisible(true);
       }}
       style={styles.matchItem}
     >
@@ -60,15 +84,6 @@ const GroupMatches = ({ route }) => {
     </Pressable>
   );
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="blue" />
-      </View>
-    );
-  }
-
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Group Matches</Text>
@@ -79,12 +94,53 @@ const GroupMatches = ({ route }) => {
         contentContainerStyle={styles.listContent}
       />
       <BottomModal
-        visible={addscore}
-        onHardwareBackPress={() => setAddscore(false)}
-        onSwipeOut={() => setAddscore(false)}
+        visible={modalVisible}
+        onTouchOutside={() => setModalVisible(false)}
         height={0.4}
+        width={1}
+        onSwipeOut={() => setModalVisible(false)}
       >
-        {/* Add your modal content here */}
+        <ModalContent>
+          <Text style={styles.modalTitle}>Update Match Score</Text>
+          {selectedMatch && (
+            <>
+              <View style={styles.scoreInputContainer}>
+                <Text style={styles.playerName}>{selectedMatch.player1.name}</Text>
+                <TextInput
+                  style={styles.scoreInput}
+                  value={score1}
+                  onChangeText={setScore1}
+                  keyboardType="numeric"
+                  placeholder="Score"
+                />
+              </View>
+              <View style={styles.scoreInputContainer}>
+                <Text style={styles.playerName}>{selectedMatch.player2.name}</Text>
+                <TextInput
+                  style={styles.scoreInput}
+                  value={score2}
+                  onChangeText={setScore2}
+                  keyboardType="numeric"
+                  placeholder="Score"
+                />
+              </View>
+              <View style={styles.modalButtonsContainer}>
+                <ModalButton
+                  text="Cancel"
+                  onPress={() => setModalVisible(false)}
+                  style={styles.cancelButton}
+                  textStyle={styles.buttonText}
+                />
+                <ModalButton
+                  text="Update"
+                  onPress={updateMatchScore}
+                  style={styles.updateButton}
+                  textStyle={styles.buttonText}
+                />
+              </View>
+            </>
+          )}
+        </ModalContent>
       </BottomModal>
     </View>
   );
@@ -104,7 +160,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
-    flex: 1
   },
   matchItem: {
     backgroundColor: "#fff",
@@ -137,6 +192,47 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#e0e0e0",
     marginVertical: 8,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  scoreInputContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  scoreInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 4,
+    padding: 8,
+    width: 80,
+    textAlign: "center",
+  },
+  modalButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 20,
+  },
+  cancelButton: {
+    backgroundColor: "#ccc",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 4,
+  },
+  updateButton: {
+    backgroundColor: "#4a90e2",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 4,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 
