@@ -16,59 +16,8 @@ import { useFocusEffect, useTheme } from "@react-navigation/native";
 import axios from "axios";
 import serverUrl from "../hooks/server";
 import { useSocket } from "../hooks/SocketProvider";
-const gen = {
-  A: [
-    { name: "Nathan" },
-    { name: "Rachel" },
-    { name: "Mona" },
-    { name: "Kathy" },
-    { name: "Charlie" },
-  ],
-  B: [
-    { name: "Jack" },
-    { name: "Bob" },
-    { name: "Hannah" },
-    { name: "Paul" },
-    { name: "Steve" },
-  ],
-  C: [
-    { name: "Tina" },
-    { name: "Alice" },
-    { name: "Frank" },
-    { name: "Eve" },
-    { name: "Ivy" },
-  ],
-  D: [
-    { name: "Quincy" },
-    { name: "Leo" },
-    { name: "David" },
-    { name: "Olivia" },
-    { name: "Grace" },
-  ],
-};
 
-const data = [
-  { name: "Alice" },
-  { name: "Bob" },
-  { name: "Charlie" },
-  { name: "David" },
-  { name: "Eve" },
-  { name: "Frank" },
-  { name: "Grace" },
-  { name: "Hannah" },
-  { name: "Ivy" },
-  { name: "Jack" },
-  { name: "Kathy" },
-  { name: "Leo" },
-  { name: "Mona" },
-  { name: "Nathan" },
-  { name: "Olivia" },
-  { name: "Paul" },
-  { name: "Quincy" },
-  { name: "Rachel" },
-  { name: "Steve" },
-  { name: "Tina" },
-];
+  
 
 const initialStats = (group) =>
   group?.reduce((acc, player) => {
@@ -143,6 +92,9 @@ const GroupsScreen = ({ navigation, tournament }) => {
   const [groupsLoading, setGroupsLoading] = useState(true);
   const { socket } = useSocket();
 
+  const [selectedParticipant, setSelectedParticipant] = useState("");
+  const [selectedGroupForNewParticipant, setSelectedGroupForNewParticipant] = useState("");
+
   useFocusEffect(
     useCallback(() => {
       const getPlayers = async () => {
@@ -188,6 +140,44 @@ const GroupsScreen = ({ navigation, tournament }) => {
   function isEmptyObject(obj) {
     return Object.keys(obj).length > 0;
   }
+
+  const addParticipant = async () => {
+    if (!newParticipantName || !selectedGroupForNewParticipant) {
+      Alert.alert("Error", "Please enter a name and select a group");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.post(`${serverUrl}/tournaments/${tournament._id}/addParticipant`, {
+        name: newParticipantName,
+        group: selectedGroupForNewParticipant,
+      });
+
+      if (response.data) {
+        // Update the local state with the new participant
+        setGroups((prevGroups) => ({
+          ...prevGroups,
+          [selectedGroupForNewParticipant]: [
+            ...prevGroups[selectedGroupForNewParticipant],
+            { name: newParticipantName, data: response.data },
+          ],
+        }));
+
+        // Clear the input fields
+        setNewParticipantName("");
+        setSelectedGroupForNewParticipant("");
+
+        Alert.alert("Success", "Participant added successfully");
+      }
+    } catch (error) {
+      console.error("Error adding participant:", error);
+      Alert.alert("Error", "Failed to add participant");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const sendIdsToBackend = async () => {
     try {
       // Extract _id from each object in the data
@@ -214,7 +204,24 @@ const GroupsScreen = ({ navigation, tournament }) => {
     }
   };
 
-  const matches = generateRoundRobinMatches(groups[selectedGroup]);
+
+  const getUngroupedParticipants = useCallback(() => {
+    if (!groups || !participants) return [];
+  
+    // Collect all grouped participant IDs
+    const groupedParticipants = Object.values(groups)
+      .flatMap(group => group.map(player => player.data._id)); // Get _id from each player in each group
+  
+    console.log('GROUPED: ', groupedParticipants);
+  
+    // Convert groupedParticipants to a Set for efficient lookup
+    const groupedSet = new Set(groupedParticipants);
+  
+    // Filter participants that are not in groupedSet
+    return participants.filter(participant => !groupedSet.has(participant._id));
+  }, [groups, participants]);
+  
+  
 
   const updateStats = (
     groupName,
@@ -370,6 +377,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
   if (groups) {
     const groupKeys = Object.keys(groups);
     const showGroupNames = groupKeys.length > 1;
+    const ungroupedParticipants = getUngroupedParticipants();
     return (
       <ScrollView contentContainerStyle={styles.container}>
         {Object.keys(groups)?.map((groupName) => (
@@ -377,6 +385,48 @@ const GroupsScreen = ({ navigation, tournament }) => {
              <RenderTable groupName={groupName} group={groups} showGroupName={showGroupNames} />
           </View>
         ))}
+        <View style={styles.addParticipantContainer}>
+          <Text style={styles.sectionHeader}>Add Participant to Group</Text>
+          <Picker
+            selectedValue={selectedParticipant}
+            onValueChange={(itemValue) => setSelectedParticipant(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label="Select Participant" value="" />
+            {ungroupedParticipants.map((participant) => (
+              <Picker.Item
+                key={participant._id}
+                label={participant.name}
+                value={participant._id}
+              />
+            ))}
+          </Picker>
+          <Picker
+            selectedValue={selectedGroupForNewParticipant}
+            onValueChange={(itemValue) => setSelectedGroupForNewParticipant(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label="Select Group" value="" />
+            {groupKeys.map((groupName) => (
+              <Picker.Item
+                key={groupName}
+                label={`Group ${groupName}`}
+                value={groupName}
+              />
+            ))}
+          </Picker>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              (!selectedParticipant || !selectedGroupForNewParticipant) && styles.disabledButton
+            ]}
+            onPress={addParticipant}
+            disabled={!selectedParticipant || !selectedGroupForNewParticipant}
+          >
+            <Text style={styles.buttonText}>Add to Group</Text>
+          </TouchableOpacity>
+        </View>
+
         
       </ScrollView>
     );
@@ -585,5 +635,16 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  addParticipantContainer: {
+    backgroundColor: "#ffffff",
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });
