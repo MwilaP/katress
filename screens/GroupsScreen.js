@@ -153,7 +153,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
       setGroupsLoading(true);
       const response = await axios.post(`${serverUrl}/tournaments/${tournament._id}/addParticipant`, {
         playerId: selectedParticipant,
-        group: selectedGroupForNewParticipant,
+        groupId: selectedGroupForNewParticipant,
       });
 
       if (response.data) {
@@ -370,7 +370,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
     const showGroupNames = groupKeys.length > 1;
     const ungroupedParticipants = getUngroupedParticipants();
     return (
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView style={{flex: 1}}>
         {Object.keys(groups)?.map((groupName) => (
           <View key={groupName}>
              <RenderTable groupName={groupName} group={groups} showGroupName={showGroupNames} />

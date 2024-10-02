@@ -106,7 +106,7 @@ const GroupMatches = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Group Matches</Text>
+     
       <FlatList
         data={matches}
         keyExtractor={(_, index) => index.toString()}
