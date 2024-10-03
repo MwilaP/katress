@@ -4,6 +4,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import { BottomModal, ModalContent, ModalButton } from "react-native-modals";
 import serverUrl from "../hooks/server";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const MatchScreen = ({ navigation, tournament }) => {
 
@@ -14,13 +15,20 @@ const MatchScreen = ({ navigation, tournament }) => {
   useFocusEffect(
     useCallback(() => {
       const getMatches = async () => {
+        const data = await AsyncStorage.getItem(tournament._id)
+        if(data){
+          setMatches(JSON.parse(data))
+          setLoading(false)
+        }
         try {
           if (tournament) {
+
             const response = await axios.get(
               `${serverUrl}/tournaments/matches/${tournament._id}`
             );
             if (response.data) {
               setMatches(response.data);
+              await AsyncStorage.setItem(tournament._id, JSON.stringify(response.data))
               setLoading(false)
             }
           }
