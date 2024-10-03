@@ -37,9 +37,6 @@ const TournamentScreen = ({ navigation, route }) => {
         },
       }}
     >
-      <TopTab.Screen name="information">
-        {(props) => <TournamentName {...props} tournament={data} />}
-      </TopTab.Screen>
       <TopTab.Screen name="Participants">
         {(props) => <Participants {...props} tournament={data} />}
       </TopTab.Screen>
