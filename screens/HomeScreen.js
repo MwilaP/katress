@@ -18,6 +18,7 @@ import { FAB } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../hooks/AuthContext";
+import Entypo from '@expo/vector-icons/Entypo';
 
 const HomeScreen = ({ navigation }) => {
   const [tournaments, setTournaments] = useState([]);
@@ -53,6 +54,10 @@ const HomeScreen = ({ navigation }) => {
  ;
     }, [])
   );
+
+  useFocusEffect(useCallback(()=>{
+    setLoginModalVisible(false)
+  }, [user]))
 
   const CreateTournamentModal = ({ visible, onClose }) => {
     const [name, setName] = useState('');
@@ -107,7 +112,7 @@ const HomeScreen = ({ navigation }) => {
 
   
 
-  const LoginModal = () => {
+  const LoginModal = ({close}) => {
 
     const [loading, setLoading] = useState(false)
     const [username, setUsername] = useState('');
@@ -125,9 +130,12 @@ const HomeScreen = ({ navigation }) => {
         const admini = await axios.post(`${serverUrl}/admini/login`, {username, password})
         if(admini.data.user){
           setUser(admini.data.user)
-          setLoginModalVisible(false);
+          setLoginModalVisible(false)
+          
           setUsername('');
           setPassword('');
+          close(false);
+          
         }
         else{
           Alert.alert('ERROR', 'incorrect username or password')
@@ -174,7 +182,7 @@ const HomeScreen = ({ navigation }) => {
               ) : 
             
             (<>
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+            <TouchableOpacity style={styles.loginButton} onPress={()=> handleLogin()}>
                 <Text style={styles.buttonText}>Login</Text>
               </TouchableOpacity><TouchableOpacity
                 style={styles.cancelButton}
@@ -219,12 +227,20 @@ const HomeScreen = ({ navigation }) => {
         <MaterialCommunityIcons name="trophy" size={32} color="#FFD700" />
         <Text style={styles.headerText}>MPM Tournaments</Text>
         
+        {user ? (
         <TouchableOpacity 
+          style={styles.profileIcon}
+          onPress={() => setUser(null)}
+        >
+          <Entypo name="log-out" size={32} color="gray" />
+        </TouchableOpacity>
+        ):
+        (<TouchableOpacity 
             style={styles.profileIcon}
             onPress={() => setLoginModalVisible(true)}
           >
             <MaterialCommunityIcons name="account-circle" size={32} color="gray" />
-          </TouchableOpacity>
+          </TouchableOpacity>)}
       </View>
     </View>
     <View style={styles.container}>
@@ -238,17 +254,23 @@ const HomeScreen = ({ navigation }) => {
           contentContainerStyle={styles.listContainer}
         />
       )}
-      <FAB
-        style={styles.fab}
-        icon="plus"
-        onPress={() => setCreateModalVisible(true)}
-        color="white"
-      />
+      {
+        user && (
+          <FAB
+          style={styles.fab}
+          icon="plus"
+          onPress={() => setCreateModalVisible(true)}
+          color="white"
+        />
+
+        )
+      }
+     
       <CreateTournamentModal
         visible={createModalVisible}
         onClose={() => setCreateModalVisible(false)}
       />
-      <LoginModal />
+      <LoginModal close={setLoginModalVisible}/>
     </View>
   </SafeAreaView>
   );
