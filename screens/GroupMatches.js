@@ -13,6 +13,7 @@ const GroupMatches = ({ route }) => {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [updateloading, setUpdateloading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useFocusEffect(
     useCallback(() => {
@@ -24,11 +25,13 @@ const GroupMatches = ({ route }) => {
             );
             if (response.data) {
               setMatches(response.data);
+              setLoading(false)
             }
           }
         } catch (error) {
           console.error("Error fetching matches:", error);
           Alert.alert("Error", "Failed to fetch matches. Please try again.");
+          setLoading(false)
         }
       };
       getMatches();
@@ -103,6 +106,14 @@ const GroupMatches = ({ route }) => {
       </View>
     </Pressable>
   );
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="blue" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
