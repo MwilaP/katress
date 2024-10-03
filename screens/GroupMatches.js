@@ -136,7 +136,7 @@ const GroupMatches = ({ route }) => {
           {selectedMatch && (
             <>
               <View style={styles.scoreInputContainer}>
-                <Text style={styles.playerName}>{selectedMatch.player1.name}</Text>
+                <Text style={styles.playerName}>{selectedMatch.player1.firstName} {selectedMatch.player1.lastName}</Text>
                 <TextInput
                   style={styles.scoreInput}
                   value={score1}
@@ -146,7 +146,7 @@ const GroupMatches = ({ route }) => {
                 />
               </View>
               <View style={styles.scoreInputContainer}>
-                <Text style={styles.playerName}>{selectedMatch.player2.name}</Text>
+                <Text style={styles.playerName}>{selectedMatch.player2.firstName} {selectedMatch.player2.lastName}</Text>
                 <TextInput
                   style={styles.scoreInput}
                   value={score2}
