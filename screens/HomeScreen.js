@@ -21,6 +21,9 @@ const HomeScreen = ({ navigation }) => {
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createModalVisible, setCreateModalVisible] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginModalVisible, setLoginModalVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -90,6 +93,54 @@ const HomeScreen = ({ navigation }) => {
     );
   };
 
+  const handleLogin = async () => {
+    // Implement your login logic here
+    console.log('Login attempted with:', username, password);
+    // For demonstration, we'll just close the modal and clear the fields
+    setLoginModalVisible(false);
+    setUsername('');
+    setPassword('');
+  };
+
+  const LoginModal = () => (
+    <Modal
+      visible={loginModalVisible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setLoginModalVisible(false)}
+    >
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalHeader}>Login</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Username"
+            value={username}
+            onChangeText={setUsername}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+          <View style={styles.modalButtonContainer}>
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+              <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.cancelButton} 
+              onPress={() => setLoginModalVisible(false)}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   const Tournament = ({ item }) => (
     <View style={{ alignItems: 'center', margin: 2 }}> 
 
@@ -119,6 +170,13 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.headerContent}>
         <MaterialCommunityIcons name="trophy" size={32} color="#FFD700" />
         <Text style={styles.headerText}>MPM Tournaments</Text>
+        
+        <TouchableOpacity 
+            style={styles.profileIcon}
+            onPress={() => setLoginModalVisible(true)}
+          >
+            <MaterialCommunityIcons name="account-circle" size={32} color="gray" />
+          </TouchableOpacity>
       </View>
     </View>
     <View style={styles.container}>
@@ -142,6 +200,7 @@ const HomeScreen = ({ navigation }) => {
         visible={createModalVisible}
         onClose={() => setCreateModalVisible(false)}
       />
+      <LoginModal />
     </View>
   </SafeAreaView>
   );
@@ -294,6 +353,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#4A90E2',
     marginLeft: 10,
+  },
+  profileIcon: {
+    marginLeft: 'auto',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  loginButton: {
+    backgroundColor: '#4A90E2',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 8,
   },
 });
 
