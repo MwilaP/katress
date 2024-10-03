@@ -123,11 +123,15 @@ const HomeScreen = ({ navigation }) => {
         }
         setLoading(true)
         const admini = await axios.post(`${serverUrl}/admini/login`, {username, password})
-        if(admini.data){
-          setUser(admini.data)
+        if(admini.data.user){
+          setUser(admini.data.user)
           setLoginModalVisible(false);
           setUsername('');
           setPassword('');
+        }
+        else{
+          Alert.alert('ERROR', 'incorrect username or password')
+          setLoading(false)
         }
         
       } catch (error) {
@@ -139,7 +143,7 @@ const HomeScreen = ({ navigation }) => {
       }
     };
     
-    (
+   return (
     <Modal
       visible={loginModalVisible}
       animationType="slide"
