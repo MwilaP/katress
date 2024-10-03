@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Trophy Cup -->
+  <path d="M30,20 L70,20 L65,60 C65,70 35,70 35,60 Z" fill="#FFD700"/>
+  
+  <!-- Trophy Handles -->
+  <path d="M25,25 Q15,35 25,45" fill="none" stroke="#FFD700" stroke-width="5"/>
+  <path d="M75,25 Q85,35 75,45" fill="none" stroke="#FFD700" stroke-width="5"/>
+  
+  <!-- Trophy Base -->
+  <rect x="35" y="80" width="30" height="5" fill="#FFD700"/>
+  <rect x="45" y="60" width="10" height="20" fill="#FFD700"/>
+  
+  <!-- 8-Ball -->
+  <circle cx="50" cy="40" r="20" fill="#000000"/>
+  <circle cx="50" cy="40" r="18" fill="#FFFFFF"/>
+  <circle cx="50" cy="40" r="16" fill="#000000"/>
+  
+  <!-- Number 8 -->
+  <text x="50" y="46" font-family="Arial, sans-serif" font-size="18" fill="#FFFFFF" text-anchor="middle">8</text>
+</svg>
