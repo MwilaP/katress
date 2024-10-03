@@ -17,7 +17,7 @@ const MatchScreen = ({ navigation, tournament }) => {
         try {
           if (tournament) {
             const response = await axios.get(
-              `${serverUrl}/tournaments/matches/${tournament}`
+              `${serverUrl}/tournaments/matches/${tournament._id}`
             );
             if (response.data) {
               setMatches(response.data);
