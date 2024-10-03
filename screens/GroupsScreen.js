@@ -557,7 +557,7 @@ export default GroupsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 5,
     backgroundColor: "#f5f5f5",
   },
   loadingContainer: {

@@ -83,6 +83,8 @@ const Participants = ({ tournament }) => {
   const [addLoading, setAddLoading] = useState(false);
   const [addParticipants, setAddParticipants] = useState(false);
   const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
 
   const disabled = !name || addLoading;
 
@@ -113,7 +115,7 @@ const Participants = ({ tournament }) => {
       if (tournament) {
         setAddLoading(true);
         await axios
-          .post(`${serverUrl}/tournaments/${tournament._id}/player`, { name })
+          .post(`${serverUrl}/tournaments/${tournament._id}/player`, { firstName, lastName })
           .then(async (res) => {
             if (res.status == 201) {
               const players = await axios.get(
@@ -266,10 +268,18 @@ const Participants = ({ tournament }) => {
           <View style={{ justifyContent: "center" }}>
             <View>
               <TextInput
-                value={name}
-                onChangeText={(text) => setName(text)}
+                value={firstName}
+                onChangeText={(text) => setFirstName(text)}
                 mode="outlined"
-                label="Name"
+                label="first name"
+              />
+            </View>
+            <View>
+              <TextInput
+                value={lastName}
+                onChangeText={(text) => setLastName(text)}
+                mode="outlined"
+                label="last name"
               />
             </View>
             <View
