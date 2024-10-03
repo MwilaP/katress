@@ -18,6 +18,7 @@ import serverUrl from "../hooks/server";
 import { useSocket } from "../hooks/SocketProvider";
 import { Modal, ModalContent, SlideAnimation } from "react-native-modals";
 import { useAuth } from "../hooks/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
   
 
@@ -126,12 +127,18 @@ const GroupsScreen = ({ navigation, tournament }) => {
     useCallback(() => {
       const getGroups = async () => {
         console.log("running");
+        const data = await AsyncStorage.getItem(`groups_${tournament._id}`)
+        if (data){
+          setGroups(JSON.parse(data))
+          setGroupsLoading(false)
+        }
         socket.emit("groups", tournament._id);
-        socket.on("groups", (data) => {
+        socket.on("groups", async (data) => {
           //const islength = [...data];
           //console.log(islength.length);
           if (Object.keys(data).length > 0) {
             setGroups(data);
+            await AsyncStorage.setItem(`groups_${tournament._id}`, JSON.stringify(data))
             // console.log("socketdata", data);
             // setTimeout(()=>{
             //   setGroupsLoading(false);
