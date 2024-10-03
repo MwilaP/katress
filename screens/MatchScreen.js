@@ -49,7 +49,7 @@ const MatchScreen = ({ navigation, tournament }) => {
       style={styles.matchItem}
     >
       <View style={styles.playerContainer}>
-        <Text style={styles.playerName}>{match.player1.firstName} {match.player2.lastName}</Text>
+        <Text style={styles.playerName}>{match.player1.firstName} {match.player1.lastName}</Text>
         <Text style={styles.score}>{match.player1Score}</Text>
       </View>
       <View style={styles.separator} />
