@@ -16,26 +16,40 @@ import {
   useFocusEffect,
 } from "@react-navigation/native";
 import GroupMatches from "../screens/GroupMatches";
+import { useAuth } from "../hooks/AuthContext";
 
 const Tabs = createBottomTabNavigator();
 const TournmentStack = createStackNavigator();
 
-const Tournment = ({ navigation }) => (
-  <TournmentStack.Navigator>
-    <TournmentStack.Screen
-      options={{
-        headerShown: false,
-      }}
-      name="Home"
-      component={HomeScreen}
-    />
-    <TournmentStack.Screen
-      name="Tournament Details"
-      component={TournamentScreen}
-    />
-    <TournmentStack.Screen name="GroupMatches" component={GroupMatches} />
-  </TournmentStack.Navigator>
-);
+const Tournment = ({ navigation }) => {
+
+  const {user} = useAuth()
+  return(
+    
+    <TournmentStack.Navigator>
+      <TournmentStack.Screen
+        options={{
+          headerShown: false,
+        }}
+        name="Home"
+        component={HomeScreen}
+      />
+      <TournmentStack.Screen
+        name="Tournament Details"
+        component={TournamentScreen}
+      />
+      {
+        user && (
+          <TournmentStack.Screen name="GroupMatches" component={GroupMatches} />
+        )
+
+      }
+      
+    </TournmentStack.Navigator>
+  );
+
+}
+ 
 
 const Main = () => {
   return (
