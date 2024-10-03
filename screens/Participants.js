@@ -86,7 +86,7 @@ const Participants = ({ tournament }) => {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
 
-  const disabled = !name || addLoading;
+  const disabled = !firstName || !lastName || addLoading;
 
   useFocusEffect(
     useCallback(() => {
@@ -123,7 +123,8 @@ const Participants = ({ tournament }) => {
               );
               if (players.data) {
                 setParticipants(players.data);
-                setName("");
+                setFirstName('')
+                setLastName('')
                 setAddLoading(false);
               }
             }
@@ -183,7 +184,8 @@ const Participants = ({ tournament }) => {
             >
               <View style={{flexDirection: 'row'}}>
                 <Text style={{fontSize: 15, fontWeight: '700', padding: 10, color: 'grey'}}>{index + 1}.</Text>
-                <Text style={{fontSize: 15, fontWeight: '700', padding: 10}} >{item.name}</Text>
+                <Text style={{fontSize: 15, fontWeight: '700', padding: 10}} >{item.firstName} {item.lastName}</Text>
+                
               </View>
             </View>
           </View>
