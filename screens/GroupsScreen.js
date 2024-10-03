@@ -90,6 +90,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
   const [selectedGroup, setSelectedGroup] = useState("A");
   const [selectedMatch, setSelectedMatch] = useState("");
   const [selectedWinner, setSelectedWinner] = useState("");
+  const {user} = useAuth()
 
   const [player1Score, setPlayer1Score] = useState("");
   const [player2Score, setPlayer2Score] = useState("");
@@ -101,6 +102,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
   const [selectedParticipant, setSelectedParticipant] = useState("");
   const [selectedGroupForNewParticipant, setSelectedGroupForNewParticipant] = useState("");
 const [adding, setAdding] = useState(false)
+
 
   useFocusEffect(
     useCallback(() => {
@@ -370,10 +372,14 @@ const [adding, setAdding] = useState(false)
     return (
       <Pressable
         onPress={() =>
-          navigation.navigate("GroupMatches", {
-            tournament: tournament._id,
-            group: groupA[0].group_id,
-          })
+        {
+          if(user){
+            navigation.navigate("GroupMatches", {
+              tournament: tournament._id,
+              group: groupA[0].group_id,
+            })
+          }
+        }
         }
         style={styles.table}
       >

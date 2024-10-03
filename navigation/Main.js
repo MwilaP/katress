@@ -38,12 +38,9 @@ const Tournment = ({ navigation }) => {
         name="Tournament Details"
         component={TournamentScreen}
       />
-      {
-        user && (
-          <TournmentStack.Screen name="GroupMatches" component={GroupMatches} />
-        )
-
-      }
+    
+      <TournmentStack.Screen name="GroupMatches" component={GroupMatches} />
+       
       
     </TournmentStack.Navigator>
   );
