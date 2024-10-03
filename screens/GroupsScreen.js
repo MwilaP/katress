@@ -379,7 +379,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
 
         {player.map((player, index) => (
           <View key={index} style={[styles.row, index % 2 === 0 ? styles.evenRow : styles.oddRow]}>
-            <Text style={[styles.cell, { flex: 2 }]}>{player?.name}</Text>
+            <Text style={[styles.cell, { flex: 2 }]}>{player?.firstName} {player.lastName}</Text>
             <Text style={styles.cell}>{player?.points}</Text>
             <Text style={styles.cell}>{player?.gamesPlayed}</Text>
             <Text style={styles.cell}>{player?.gamesWon}</Text>
