@@ -110,7 +110,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
             );
             if (players.data) {
               setParticipants(players.data);
-              setGroupsLoading(false);
+              
             } else {
               //setGroupsLoading(false);
             }
@@ -132,10 +132,17 @@ const GroupsScreen = ({ navigation, tournament }) => {
           if (Object.keys(data).length > 0) {
             setGroups(data);
             // console.log("socketdata", data);
+            // setTimeout(()=>{
+            //   setGroupsLoading(false);
+
+            // }, 3000)
             setGroupsLoading(false);
           }
           setGroupsLoading(false);
+
+          
         });
+        
       };
       getGroups();
     }, [])
@@ -383,23 +390,18 @@ const GroupsScreen = ({ navigation, tournament }) => {
     );
   };
 
-
-  if (groupsLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3498db" />
-      </View>
-    );
-  }
-
-  if (groups) {
+  const RenderGroups = () => {
     const groupKeys = Object.keys(groups);
     const newGroup = getGroupInfo(groups)
-    console.log(newGroup)
     const showGroupNames = groupKeys.length > 1;
     const ungroupedParticipants = getUngroupedParticipants();
-    return (
-      <ScrollView style={{flex: 1}}>
+    return(
+      <View style={{flex: 1}}>
+
+        {
+          groups ?(
+
+            <ScrollView style={{flex: 1}}>
         {Object.keys(groups)?.map((groupName) => (
           <View key={groupName}>
              <RenderTable groupName={groupName} group={groups} showGroupName={showGroupNames} />
@@ -451,17 +453,10 @@ const GroupsScreen = ({ navigation, tournament }) => {
 
         
       </ScrollView>
-    );
-  }
 
-  return (
-    <View style={styles.container}>
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3498db" />
-        </View>
-      ) : (
-        <View style={styles.noGroupsContainer}>
+          ) : (
+
+            <View style={styles.noGroupsContainer}>
           {generatedGroups ? (
             <ScrollView style={styles.generatedGroupsContainer}>
               {Object.keys(generatedGroups)?.map((groupName) => (
@@ -529,6 +524,29 @@ const GroupsScreen = ({ navigation, tournament }) => {
       </Modal></>
           )}
         </View>
+
+          )
+
+        }
+      </View>
+
+    )
+  }
+
+
+
+  
+
+  return (
+    <View style={styles.container}>
+      {groupsLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#3498db" />
+        </View>
+      ) : 
+      (
+        <RenderGroups/>
+        
       )}
     </View>
   );
