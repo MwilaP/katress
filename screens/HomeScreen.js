@@ -17,14 +17,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { FAB } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../hooks/AuthContext";
 
 const HomeScreen = ({ navigation }) => {
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createModalVisible, setCreateModalVisible] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+ 
   const [loginModalVisible, setLoginModalVisible] = useState(false);
+  const {user, setUser} = useAuth()
 
   useFocusEffect(
     useCallback(() => {
@@ -104,16 +105,41 @@ const HomeScreen = ({ navigation }) => {
     );
   };
 
-  const handleLogin = async () => {
-    // Implement your login logic here
-    console.log('Login attempted with:', username, password);
-    // For demonstration, we'll just close the modal and clear the fields
-    setLoginModalVisible(false);
-    setUsername('');
-    setPassword('');
-  };
+  
 
-  const LoginModal = () => (
+  const LoginModal = () => {
+
+    const [loading, setLoading] = useState(false)
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleLogin = async () => {
+
+      try {
+        if(!username || !password)
+        {
+          Alert.alert('error',' please enter username and password')
+          return
+        }
+        setLoading(true)
+        const admini = await axios.post(`${serverUrl}/admini/login`, {username, password})
+        if(admini.data){
+          setUser(admini.data)
+          setLoginModalVisible(false);
+          setUsername('');
+          setPassword('');
+        }
+        
+      } catch (error) {
+        Alert.alert('error', 'something went wrong. TRY AGAIN')
+        setUsername('');
+      setPassword('');
+      setLoading(false)
+        
+      }
+    };
+    
+    (
     <Modal
       visible={loginModalVisible}
       animationType="slide"
@@ -137,20 +163,27 @@ const HomeScreen = ({ navigation }) => {
             secureTextEntry
           />
           <View style={styles.modalButtonContainer}>
+            {
+              loading ? (
+                <ActivityIndicator/>
+
+              ) : 
+            
+            (<>
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.buttonText}>Login</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.cancelButton} 
-              onPress={() => setLoginModalVisible(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
+                <Text style={styles.buttonText}>Login</Text>
+              </TouchableOpacity><TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setLoginModalVisible(false)}
+              >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity></>)
+                }
           </View>
         </View>
       </View>
     </Modal>
-  );
+  )};
 
   const Tournament = ({ item }) => (
     <View style={{ alignItems: 'center', margin: 2 }}> 
