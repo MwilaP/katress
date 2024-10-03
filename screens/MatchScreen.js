@@ -28,7 +28,7 @@ const MatchScreen = ({ navigation, tournament }) => {
             );
             if (response.data) {
               setMatches(response.data);
-              await AsyncStorage.setItem(tournament._id, JSON.stringify(response.data))
+              await AsyncStorage.setItem(`matches_${tournament._id}`, JSON.stringify(response.data))
               setLoading(false)
             }
           }
