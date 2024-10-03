@@ -376,23 +376,25 @@ const GroupsScreen = ({ navigation, tournament }) => {
         {showGroupName && <Text style={styles.groupHeader}>Group {groupName}</Text>}
         <View style={styles.headerRow}>
           <Text style={[styles.headerCell, { flex: 2 }]}>Name</Text>
-          <Text style={styles.headerCell}>Pts</Text>
+          
           <Text style={styles.headerCell}>GP</Text>
           <Text style={styles.headerCell}>GW</Text>
           <Text style={styles.headerCell}>GL</Text>
           <Text style={styles.headerCell}>SF</Text>
           <Text style={styles.headerCell}>SA</Text>
+          <Text style={styles.headerCell}>Pts</Text>
         </View>
 
         {player.map((player, index) => (
           <View key={index} style={[styles.row, index % 2 === 0 ? styles.evenRow : styles.oddRow]}>
             <Text style={[styles.cell, { flex: 2 }]}>{player?.firstName} {player.lastName}</Text>
-            <Text style={styles.cell}>{player?.points}</Text>
+            
             <Text style={styles.cell}>{player?.gamesPlayed}</Text>
             <Text style={styles.cell}>{player?.gamesWon}</Text>
             <Text style={styles.cell}>{player?.gamesLost}</Text>
             <Text style={styles.cell}>{player?.scoreFor}</Text>
             <Text style={styles.cell}>{player?.scoreAgainst}</Text>
+            <Text style={styles.cell}>{player?.points}</Text>
           </View>
         ))}
       </Pressable>
