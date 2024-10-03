@@ -100,6 +100,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
 
   const [selectedParticipant, setSelectedParticipant] = useState("");
   const [selectedGroupForNewParticipant, setSelectedGroupForNewParticipant] = useState("");
+const [adding, setAdding] = useState(false)
 
   useFocusEffect(
     useCallback(() => {
@@ -169,7 +170,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
     try {
       console.log('group', selectedGroupForNewParticipant, 'player: ', selectedParticipant )
 
-      setGroupsLoading(true);
+      setAdding(true)
       const response = await axios.post(`${serverUrl}/tournaments/${tournament._id}/addParticipant`, {
         playerId: selectedParticipant,
         groupId: selectedGroupForNewParticipant,
@@ -179,11 +180,13 @@ const GroupsScreen = ({ navigation, tournament }) => {
         // Refresh groups data
         socket.emit("groups", tournament._id);
         Alert.alert("Success", "Participant added to group successfully");
+        setAdding(true)
       }
     } catch (error) {
       console.error("Error adding participant to group:", error);
       Alert.alert("Error", "Failed to add participant to group");
     } finally {
+      setAdding(true)
       setGroupsLoading(false);
       setSelectedParticipant("");
       setSelectedGroupForNewParticipant("");
@@ -382,6 +385,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
           <Text style={styles.headerCell}>GL</Text>
           <Text style={styles.headerCell}>SF</Text>
           <Text style={styles.headerCell}>SA</Text>
+          <Text style={styles.headerCell}>SD</Text>
           <Text style={styles.headerCell}>Pts</Text>
         </View>
 
@@ -394,6 +398,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
             <Text style={styles.cell}>{player?.gamesLost}</Text>
             <Text style={styles.cell}>{player?.scoreFor}</Text>
             <Text style={styles.cell}>{player?.scoreAgainst}</Text>
+            <Text style={styles.cell}>{player?.scoreFor - player?.scoreAgainst}</Text>
             <Text style={styles.cell}>{player?.points}</Text>
           </View>
         ))}
@@ -434,7 +439,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
             {ungroupedParticipants.map((participant) => (
               <Picker.Item
                 key={participant._id}
-                label={participant.name}
+                label={participant.firstName + ' ' + participant.lastName}
                 value={participant._id}
               />
             ))}
@@ -461,7 +466,16 @@ const GroupsScreen = ({ navigation, tournament }) => {
             onPress={addParticipant}
             disabled={!selectedParticipant || !selectedGroupForNewParticipant}
           >
-            <Text style={styles.buttonText}>Add to Group</Text>
+            {
+              adding ?
+              (
+                <ActivityIndicator/>
+              ): (
+
+                <Text style={styles.buttonText}>Add to Group</Text>
+
+              )
+            }
           </TouchableOpacity>
         </View>
 
