@@ -143,9 +143,8 @@ const HomeScreen = ({ navigation }) => {
         }
         
       } catch (error) {
+        console.log(error)
         Alert.alert('error', 'something went wrong. TRY AGAIN')
-        setUsername('');
-      setPassword('');
       setLoading(false)
         
       }
