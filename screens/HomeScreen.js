@@ -16,6 +16,7 @@ import serverUrl from "../hooks/server";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FAB } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const HomeScreen = ({ navigation }) => {
   const [tournaments, setTournaments] = useState([]);
@@ -27,18 +28,28 @@ const HomeScreen = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
+
+
       const getTournaments = async () => {
+        const data = await AsyncStorage.getItem('tournament')
+        if(data){
+          setTournaments(JSON.parse(data))
+          setLoading(false)
+        }
         try {
           const response = await axios.get(`${serverUrl}/tournaments`);
           if (response.data) {
             setTournaments(response.data);
+            setLoading(false)
+            await AsyncStorage.setItem('tournament', JSON.stringify(response.data))
           }
         } catch (error) {
           console.error("Error fetching tournaments:", error);
+          setLoading(false)
         }
       };
       getTournaments();
-      setLoading(false);
+ ;
     }, [])
   );
 
