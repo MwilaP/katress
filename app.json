@@ -19,7 +19,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.azzazel.katress"
     },
     "web": {
       "favicon": "./assets/favicon.png"
