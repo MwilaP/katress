@@ -515,7 +515,7 @@ const [adding, setAdding] = useState(false)
           ) : (
             <><View style={styles.noGroupsContent}>
                   <Text style={styles.noGroupsText}>No Groups</Text>
-                  <TouchableOpacity
+                 {user && ( <TouchableOpacity
                     onPress={() => {
                       //setLoading(true);
                       setGenerate(true)
@@ -525,7 +525,7 @@ const [adding, setAdding] = useState(false)
                     style={styles.generateButton}
                   >
                     <Text style={styles.generateButtonText}>Generate</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity>)}
                 </View>
                 <Modal
         visible={generate}

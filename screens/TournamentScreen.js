@@ -30,20 +30,20 @@ const TournamentScreen = ({ navigation, route }) => {
   const {user} = useAuth()
   const data = route?.params?.tournament ? route?.params?.tournament : "";
 
-  if(user){
+ 
     return (
       <TopTab.Navigator
         screenOptions={{
           tabBarAllowFontScaling: true,
-          tabBarScrollEnabled: true,
+          tabBarScrollEnabled: user ? true : false,
           tabBarLabelStyle: {
             fontSize: 13,
           },
         }}
       >
-        <TopTab.Screen name="Participants">
+        { user && (<TopTab.Screen name="Participants">
           {(props) => <Participants {...props} tournament={data} />}
-        </TopTab.Screen>
+        </TopTab.Screen>)}
         <TopTab.Screen name="Table">
           {(props) => <GroupsScreen {...props} tournament={data} />}
         </TopTab.Screen>
@@ -53,25 +53,9 @@ const TournamentScreen = ({ navigation, route }) => {
       </TopTab.Navigator>
     );
 
-  }
-  return (
-    <TopTab.Navigator
-      screenOptions={{
-        tabBarAllowFontScaling: true,
-        //tabBarScrollEnabled: true,
-        tabBarLabelStyle: {
-          fontSize: 13,
-        },
-      }}
-    >
-      <TopTab.Screen name="Table">
-        {(props) => <GroupsScreen {...props} tournament={data} />}
-      </TopTab.Screen>
-      <TopTab.Screen name="Matches">
-        {(props) => <MatchScreen {...props} tournament={data} />}
-      </TopTab.Screen>
-    </TopTab.Navigator>
-  );
+
+
+
 };
 export default TournamentScreen;
 
