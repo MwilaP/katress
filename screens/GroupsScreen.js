@@ -17,6 +17,7 @@ import axios from "axios";
 import serverUrl from "../hooks/server";
 import { useSocket } from "../hooks/SocketProvider";
 import { Modal, ModalContent, SlideAnimation } from "react-native-modals";
+import { useAuth } from "../hooks/AuthContext";
 
   
 
@@ -330,6 +331,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
   }
 
   const RenderTable = ({ groupName, group, showGroupName }) => {
+
     const groupA = group[groupName];
     const sortedPlayers = groups
       ? groupA.sort((a, b) => {
@@ -391,6 +393,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
   };
 
   const RenderGroups = () => {
+    const {user} = useAuth()
     const groupKeys = Object.keys(groups);
     const newGroup = getGroupInfo(groups)
     const showGroupNames = groupKeys.length > 1;
@@ -407,7 +410,11 @@ const GroupsScreen = ({ navigation, tournament }) => {
              <RenderTable groupName={groupName} group={groups} showGroupName={showGroupNames} />
           </View>
         ))}
-         <View style={styles.addParticipantContainer}>
+
+        {
+          user && (
+
+            <View style={styles.addParticipantContainer}>
           <Text style={styles.sectionHeader}>Add Participant to Group</Text>
           <Picker
             selectedValue={selectedParticipant}
@@ -448,6 +455,10 @@ const GroupsScreen = ({ navigation, tournament }) => {
             <Text style={styles.buttonText}>Add to Group</Text>
           </TouchableOpacity>
         </View>
+
+          )
+        }
+         
 
         
 
