@@ -23,6 +23,7 @@ import Modal, {
   BottomModal,
 } from "react-native-modals";
 import { TextInput } from "react-native-paper";
+import { useAuth } from "../hooks/AuthContext";
 const GROUPS = {
   A: [
     { name: "Nathan" },
@@ -85,6 +86,7 @@ const Participants = ({ tournament }) => {
   const [name, setName] = useState("");
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const {user} = useAuth()
 
   const disabled = !firstName || !lastName || addLoading;
 
@@ -233,7 +235,7 @@ const Participants = ({ tournament }) => {
           </View>
         )}
       />
-      <View style={{ alignItems: "center" }}>
+     {user && ( <View style={{ alignItems: "center" }}>
         <Pressable
           onPress={() => setAddParticipants(true)}
           style={{
@@ -252,7 +254,7 @@ const Participants = ({ tournament }) => {
             Add Players
           </Text>
         </Pressable>
-      </View>
+      </View>)}
       <BottomModal
         onHardwareBackPress={() => setAddParticipants(false)}
         onSwipeOut={() => setAddParticipants(false)}

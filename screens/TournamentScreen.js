@@ -11,39 +11,25 @@ import GroupMatches from "./GroupMatches";
 import { useAuth } from "../hooks/AuthContext";
 
 const TopTab = createMaterialTopTabNavigator();
-const GroupStack = createStackNavigator();
-
-const Groups = ({ navigation }) => (
-  <GroupStack.Navigator>
-    <TopTab.Screen
-      options={{
-        headerShown: false,
-      }}
-      name="Table"
-      component={GroupsScreen}
-    />
-    <TopTab.Screen name="GroupMatches" component={GroupMatches} />
-  </GroupStack.Navigator>
-);
 
 const TournamentScreen = ({ navigation, route }) => {
-  const {user} = useAuth()
-  const data = route?.params?.tournament ? route?.params?.tournament : "";
+  
+  const data = route?.params?.tournament 
 
  
     return (
       <TopTab.Navigator
         screenOptions={{
           tabBarAllowFontScaling: true,
-          tabBarScrollEnabled: user ? true : false,
+          tabBarScrollEnabled:  true,
           tabBarLabelStyle: {
             fontSize: 13,
           },
         }}
       >
-        { user && (<TopTab.Screen name="Participants">
+      <TopTab.Screen name="Participants">
           {(props) => <Participants {...props} tournament={data} />}
-        </TopTab.Screen>)}
+        </TopTab.Screen>
         <TopTab.Screen name="Table">
           {(props) => <GroupsScreen {...props} tournament={data} />}
         </TopTab.Screen>

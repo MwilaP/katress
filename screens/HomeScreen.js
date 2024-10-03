@@ -55,9 +55,6 @@ const HomeScreen = ({ navigation }) => {
     }, [])
   );
 
-  useFocusEffect(useCallback(()=>{
-    setLoginModalVisible(false)
-  }, [user]))
 
   const CreateTournamentModal = ({ visible, onClose }) => {
     const [name, setName] = useState('');
@@ -202,7 +199,7 @@ const HomeScreen = ({ navigation }) => {
    
     <TouchableOpacity
       style={styles.tournamentCard}
-      onPress={() => navigation.navigate("Tournament Details", { tournament: item })}
+      onPress={() => navigation.navigate("Tournament", { tournament: item })}
     >
       <View style={styles.cardContent}>
         <MaterialCommunityIcons name="trophy-outline" size={40} color="#FFD700" />

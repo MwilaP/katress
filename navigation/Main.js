@@ -35,7 +35,7 @@ const Tournment = ({ navigation }) => {
         component={HomeScreen}
       />
       <TournmentStack.Screen
-        name="Tournament Details"
+        name="Tournament"
         component={TournamentScreen}
       />
     
