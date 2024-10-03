@@ -179,14 +179,15 @@ const [adding, setAdding] = useState(false)
       if (response.data) {
         // Refresh groups data
         socket.emit("groups", tournament._id);
+        setAdding(false)
         Alert.alert("Success", "Participant added to group successfully");
-        setAdding(true)
+        
       }
     } catch (error) {
       console.error("Error adding participant to group:", error);
       Alert.alert("Error", "Failed to add participant to group");
     } finally {
-      setAdding(true)
+      setAdding(false)
       setGroupsLoading(false);
       setSelectedParticipant("");
       setSelectedGroupForNewParticipant("");
