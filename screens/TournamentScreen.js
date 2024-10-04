@@ -13,8 +13,9 @@ import { useAuth } from "../hooks/AuthContext";
 const TopTab = createMaterialTopTabNavigator();
 
 const TournamentScreen = ({ navigation, route }) => {
+
+  const {tournament} = route?.params
   
-  const data = route?.params?.tournament 
 
  
     return (
@@ -28,13 +29,13 @@ const TournamentScreen = ({ navigation, route }) => {
         }}
       >
       <TopTab.Screen name="Participants">
-          {(props) => <Participants {...props} tournament={data} />}
+          {(props) => <Participants {...props} tournament={tournament} />}
         </TopTab.Screen>
         <TopTab.Screen name="Table">
-          {(props) => <GroupsScreen {...props} tournament={data} />}
+          {(props) => <GroupsScreen {...props} tournament={tournament} />}
         </TopTab.Screen>
         <TopTab.Screen name="Matches">
-          {(props) => <MatchScreen {...props} tournament={data} />}
+          {(props) => <MatchScreen {...props} tournament={tournament} />}
         </TopTab.Screen>
       </TopTab.Navigator>
     );
