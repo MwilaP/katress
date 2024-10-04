@@ -28,6 +28,11 @@ const HomeScreen = ({ navigation }) => {
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const {user, setUser} = useAuth()
 
+
+  const handlenavigation = (data) => {
+    navigation.navigate("Tournament", {tournament: data }
+  }
+
   useFocusEffect(
     useCallback(() => {
 
@@ -199,7 +204,7 @@ const HomeScreen = ({ navigation }) => {
    
     <TouchableOpacity
       style={styles.tournamentCard}
-      onPress={() => navigation.navigate("Tournament", { tournament: item })}
+      onPress={() => )}
     >
       <View style={styles.cardContent}>
         <MaterialCommunityIcons name="trophy-outline" size={40} color="#FFD700" />
