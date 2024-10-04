@@ -21,8 +21,6 @@ import { useAuth } from "../hooks/AuthContext";
 const TournmentStack = createStackNavigator();
 
 const Tournment = ({ navigation }) => {
-
-  const {user} = useAuth()
   return(
     
     <TournmentStack.Navigator>
