@@ -7,24 +7,25 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ModalPortal } from "react-native-modals";
 import { SocketProvider } from "./hooks/SocketProvider";
 import AuthProvider from "./hooks/AuthContext";
+import 'react-native-reanimated';
 
 export default function App() {
   return (
     <SafeAreaProvider>
+      <SocketProvider>
       <AuthProvider>
-
-     
-      <PaperProvider>
+         <PaperProvider>
         <NavigationContainer>
-          <SocketProvider>
+          
             <StatusBar style="auto" />
 
             <Main />
             <ModalPortal />
-          </SocketProvider>
+          
         </NavigationContainer>
       </PaperProvider>
       </AuthProvider>
+      </SocketProvider>
     </SafeAreaProvider>
   );
 }

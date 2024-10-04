@@ -15,9 +15,6 @@ const TopTab = createMaterialTopTabNavigator();
 const TournamentScreen = ({ navigation, route }) => {
 
   const {tournament} = route?.params
-  
-
- 
     return (
       <TopTab.Navigator
         screenOptions={{
