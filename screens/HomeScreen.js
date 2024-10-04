@@ -204,7 +204,7 @@ const HomeScreen = ({ navigation }) => {
    
     <TouchableOpacity
       style={styles.tournamentCard}
-      onPress={() => )}
+      onPress={() => handlenavigation(item)}
     >
       <View style={styles.cardContent}>
         <MaterialCommunityIcons name="trophy-outline" size={40} color="#FFD700" />
