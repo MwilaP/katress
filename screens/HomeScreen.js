@@ -30,7 +30,7 @@ const HomeScreen = ({ navigation }) => {
 
 
   const handlenavigation = (data) => {
-    navigation.navigate("Tournament", {tournament: data }
+    navigation.navigate("Tournament", {tournament: data })
   }
 
   useFocusEffect(
