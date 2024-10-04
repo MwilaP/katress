@@ -18,7 +18,6 @@ import {
 import GroupMatches from "../screens/GroupMatches";
 import { useAuth } from "../hooks/AuthContext";
 
-const Tabs = createBottomTabNavigator();
 const TournmentStack = createStackNavigator();
 
 const Tournment = ({ navigation }) => {
