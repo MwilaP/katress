@@ -343,6 +343,16 @@ const [adding, setAdding] = useState(false)
     return result;
   }
 
+  const toGroupmatches = (tournamentid, groupid)=> {
+    if(user){
+      navigation.navigate('GroupMatches', {
+        tournament: tournamentid,
+        group: groupid,
+      })
+    }
+
+  }
+
   const RenderTable = ({ groupName, group, showGroupName }) => {
 
     const groupA = group[groupName];
@@ -371,15 +381,15 @@ const [adding, setAdding] = useState(false)
 
     return (
       <Pressable
-        onPress={() =>
-        {
-          if(user){
-            navigation.navigate("GroupMatches", {
-              tournament: tournament._id,
-              group: groupA[0].group_id,
-            })
-          }
-        }
+        onPress={() => toGroupmatches(tournament._id, groupA[0].group_id )
+        // {
+        //   if(user){
+        //     navigation.navigate("GroupMatches", {
+        //       tournament: tournament._id,
+        //       group: groupA[0].group_id,
+        //     })
+        //   }
+        // }
         }
         style={styles.table}
       >

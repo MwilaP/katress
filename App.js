@@ -12,20 +12,23 @@ import 'react-native-reanimated';
 export default function App() {
   return (
     <SafeAreaProvider>
-      <SocketProvider>
+      
       <AuthProvider>
          <PaperProvider>
         <NavigationContainer>
+        <SocketProvider>
           
             <StatusBar style="auto" />
 
             <Main />
             <ModalPortal />
+
+            </SocketProvider>
           
         </NavigationContainer>
       </PaperProvider>
       </AuthProvider>
-      </SocketProvider>
+    
     </SafeAreaProvider>
   );
 }

@@ -225,7 +225,14 @@ const HomeScreen = ({ navigation }) => {
    
     <View style={styles.headerContainer}>
       <View style={styles.headerContent}>
-        <MaterialCommunityIcons name="trophy" size={32} color="#FFD700" />
+      
+        
+        <TouchableOpacity onPress={()=> navigation.navigate('Players') } >
+        <MaterialCommunityIcons  name="trophy" size={32} color="#FFD700" />
+
+
+        </TouchableOpacity>
+        
         <Text style={styles.headerText}>MPM Tournaments</Text>
         
         {user ? (

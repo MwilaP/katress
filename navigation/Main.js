@@ -17,37 +17,62 @@ import {
 } from "@react-navigation/native";
 import GroupMatches from "../screens/GroupMatches";
 import { useAuth } from "../hooks/AuthContext";
+import Details from "../screens/MatchesScreen";
 
 const TournmentStack = createStackNavigator();
+const Tab = createBottomTabNavigator()
 
-const Tournment = ({ navigation }) => {
-  return(
+const Tournment = ({ navigation }) => (
+  <TournmentStack.Navigator>
+    <TournmentStack.Screen
+      options={{
+        headerShown: false,
+      }}
+      name="Home"
+      component={HomeScreen}
+    />
+    <TournmentStack.Screen
+    options={{
+      headerShown: false,
+    }}
+      name="Tournament"
+      component={Details}
+    />
+    <TournmentStack.Screen name="GroupMatches" component={GroupMatches} />
+    <TournmentStack.Screen name="Players" component={PlayersScreen} />
     
-    <TournmentStack.Navigator>
-      <TournmentStack.Screen
-        options={{
+    
+
+  </TournmentStack.Navigator>
+);
+
+
+ const TournmentTab = ()=> (
+  <Tab.Navigator>
+      <Tab.Screen  options={({ route }) => ({
           headerShown: false,
-        }}
-        name="Home"
-        component={HomeScreen}
-      />
-      <TournmentStack.Screen
-        name="Tournament"
-        component={TournamentScreen}
-      />
-    
-      <TournmentStack.Screen name="GroupMatches" component={GroupMatches} />
-       
-      
-    </TournmentStack.Navigator>
-  );
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="trophy" size={32} color="#FFD700" />
+          ),
 
-}
+          tabBarStyle: ((route) => {
+            const routeName = getFocusedRouteNameFromRoute(route) ?? "Home";
+            if (routeName !== "Home") {
+              return { display: "none" };
+            }
+          })(route),
+        })}
+        name="Tournaments"
+        component={Tournment}
+      /> 
+      <Tab.Screen name="Members" component={PlayersScreen} />
+    </Tab.Navigator>
+ )
  
 
 const Main = () => {
   return (
-    <Tournment/>
+    <TournmentTab/>
   );
 };
 
