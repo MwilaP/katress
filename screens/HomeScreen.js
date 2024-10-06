@@ -30,6 +30,7 @@ const HomeScreen = ({ navigation }) => {
 
 
   const handlenavigation = (data) => {
+    console.log('data', data)
     navigation.navigate("Tournament", {tournament: data })
   }
 
@@ -58,6 +59,49 @@ const HomeScreen = ({ navigation }) => {
       getTournaments();
  ;
     }, [])
+  );
+
+  const handleDeleteTournament = async () => {
+    if (!tournamentToDelete) return;
+
+    try {
+      const response = await axios.delete(`${serverUrl}/tournaments/${tournamentToDelete._id}`);
+      if (response.status === 200) {
+        const updatedTournaments = tournaments.filter(t => t._id !== tournamentToDelete._id);
+        setTournaments(updatedTournaments);
+        await AsyncStorage.setItem('tournament', JSON.stringify(updatedTournaments));
+        Alert.alert('Success', 'Tournament deleted successfully');
+      }
+    } catch (error) {
+      console.error("Error deleting tournament:", error);
+      Alert.alert('Error', 'Failed to delete tournament. Please try again.');
+    } finally {
+      setDeleteModalVisible(false);
+      setTournamentToDelete(null);
+    }
+  };
+
+  const DeleteConfirmationModal = () => (
+    <Modal
+      visible={deleteModalVisible}
+      transparent={true}
+      animationType="slide"
+    >
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalHeader}>Confirm Deletion</Text>
+          <Text>Are you sure you want to delete this tournament?</Text>
+          <View style={styles.modalButtonContainer}>
+            <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteTournament}>
+              <Text style={styles.buttonText}>Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => setDeleteModalVisible(false)}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 
 
@@ -200,23 +244,33 @@ const HomeScreen = ({ navigation }) => {
 
   const Tournament = ({ item }) => (
     <View style={{ alignItems: 'center', margin: 2 }}> 
-
-   
-    <TouchableOpacity
-      style={styles.tournamentCard}
-      onPress={() => handlenavigation(item)}
-    >
-      <View style={styles.cardContent}>
-        <MaterialCommunityIcons name="trophy-outline" size={40} color="#FFD700" />
-        <View style={styles.tournamentInfo}>
-          <Text style={styles.tournamentName}>{item?.name}</Text>
-          <Text style={styles.participantsCount}>
-            {item?.players?.length} Participants
-          </Text>
+      <TouchableOpacity
+        style={styles.tournamentCard}
+        onPress={() => handlenavigation(item)}
+      >
+        <View style={styles.cardContent}>
+          <MaterialCommunityIcons name="trophy-outline" size={40} color="#FFD700" />
+          <View style={styles.tournamentInfo}>
+            <Text style={styles.tournamentName}>{item?.name}</Text>
+            <Text style={styles.participantsCount}>
+              {item?.players?.length} Participants
+            </Text>
+          </View>
         </View>
-      </View>
-      <MaterialCommunityIcons name="chevron-right" size={24} color="#a0a0a0" />
-    </TouchableOpacity>
+        <View style={styles.cardActions}>
+          {user && (
+            <TouchableOpacity
+              onPress={() => {
+                setTournamentToDelete(item);
+                setDeleteModalVisible(true);
+              }}
+            >
+              <MaterialCommunityIcons name="delete" size={24} color="#FF6B6B" />
+            </TouchableOpacity>
+          )}
+          <MaterialCommunityIcons name="chevron-right" size={24} color="#a0a0a0" />
+        </View>
+      </TouchableOpacity>
     </View>
   );
 
@@ -225,7 +279,14 @@ const HomeScreen = ({ navigation }) => {
    
     <View style={styles.headerContainer}>
       <View style={styles.headerContent}>
-        <MaterialCommunityIcons name="trophy" size={32} color="#FFD700" />
+      
+        
+        <TouchableOpacity onPress={()=> navigation.navigate('Players') } >
+        <MaterialCommunityIcons  name="trophy" size={32} color="#FFD700" />
+
+
+        </TouchableOpacity>
+        
         <Text style={styles.headerText}>MPM Tournaments</Text>
         
         {user ? (
