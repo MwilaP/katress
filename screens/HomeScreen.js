@@ -28,6 +28,7 @@ const HomeScreen = ({ navigation }) => {
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [tournamentToDelete, setTournamentToDelete] = useState(null);
+  const [isDeleting, setDeleting] = useState(false)
   const {user, setUser} = useAuth()
 
 
@@ -67,16 +68,19 @@ const HomeScreen = ({ navigation }) => {
     if (!tournamentToDelete) return;
 
     try {
+      setDeleting(true)
       const response = await axios.delete(`${serverUrl}/tournaments/${tournamentToDelete._id}`);
       if (response.status === 200) {
         const updatedTournaments = tournaments.filter(t => t._id !== tournamentToDelete._id);
         setTournaments(updatedTournaments);
         await AsyncStorage.setItem('tournament', JSON.stringify(updatedTournaments));
         Alert.alert('Success', 'Tournament deleted successfully');
+        setDeleting(false)
       }
     } catch (error) {
       console.error("Error deleting tournament:", error);
       Alert.alert('Error', 'Failed to delete tournament. Please try again.');
+      setDeleting(false)
     } finally {
       setDeleteModalVisible(false);
       setTournamentToDelete(null);
@@ -95,7 +99,12 @@ const HomeScreen = ({ navigation }) => {
           <Text>Are you sure you want to delete this tournament?</Text>
           <View style={styles.modalButtonContainer}>
             <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteTournament}>
-              <Text style={styles.buttonText}>Delete</Text>
+              { isDeleting ? (
+                <Text style={styles.buttonText}>Deleting...</Text>
+              ) : (<Text style={styles.buttonText}>Delete</Text>)
+
+              }
+              
             </TouchableOpacity>
             <TouchableOpacity style={styles.cancelButton} onPress={() => setDeleteModalVisible(false)}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
