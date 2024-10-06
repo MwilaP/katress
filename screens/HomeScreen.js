@@ -27,7 +27,7 @@ const HomeScreen = ({ navigation }) => {
  
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [tournamentToDelete, setTournamentToDelete] = useState(null);
+  const [tournamentToDelete, setTournamentToDelete] = useState('');
   const [isDeleting, setDeleting] = useState(false)
   const {user, setUser} = useAuth()
 
@@ -52,7 +52,7 @@ const HomeScreen = ({ navigation }) => {
           if (response.data) {
             setTournaments(response.data);
             setLoading(false)
-            await AsyncStorage.setItem('tournament', JSON.stringify(response.data))
+            await AsyncStorage.setItem('tournaments', JSON.stringify(response.data))
           }
         } catch (error) {
           console.error("Error fetching tournaments:", error);
@@ -69,7 +69,8 @@ const HomeScreen = ({ navigation }) => {
 
     try {
       setDeleting(true)
-      const response = await axios.delete(`${serverUrl}/tournaments/tournaments/${tournamentToDelete._id}`);
+      console.log(tournamentToDelete._id)
+      const response = await axios.post(`${serverUrl}/tournaments/tournaments/${tournamentToDelete._id}`);
       if (response.status === 200) {
         const updatedTournaments = tournaments.filter(t => t._id !== tournamentToDelete._id);
         setTournaments(updatedTournaments);

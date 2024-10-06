@@ -19,7 +19,7 @@ const MatchScreen = ({ navigation, tournament }) => {
     useCallback(() => {
       const getMatches = async () => {
         const data = await AsyncStorage.getItem(tournament._id)
-        if(data){
+        if (data) {
           setMatches(JSON.parse(data))
           setLoading(false)
         }
@@ -66,11 +66,11 @@ const MatchScreen = ({ navigation, tournament }) => {
     if (!debouncedSearchQuery.trim()) return matches;
 
     const searchTerms = debouncedSearchQuery.toLowerCase().split(/\s*(?:vs|&)\s*/);
-    
+
     return matches.filter((match) => {
       const player1FullName = `${match.player1.firstName} ${match.player1.lastName}`.toLowerCase();
       const player2FullName = `${match.player2.firstName} ${match.player2.lastName}`.toLowerCase();
-      
+
       if (searchTerms.length === 1) {
         // Single player search
         return player1FullName.includes(searchTerms[0]) || player2FullName.includes(searchTerms[0]);
@@ -87,7 +87,7 @@ const MatchScreen = ({ navigation, tournament }) => {
 
   const MatchItem = ({ match }) => (
     <Pressable
-     
+
       style={styles.matchItem}
     >
       <View style={styles.playerContainer}>
@@ -126,7 +126,7 @@ const MatchScreen = ({ navigation, tournament }) => {
       />
 
     </View>
-    
+
   )
 }
 
@@ -136,8 +136,8 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-    padding: 5,
+    backgroundColor: "white",
+   // padding: 10,
   },
   title: {
     fontSize: 24,
@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
+    paddingHorizontal: 5
   },
   matchItem: {
     backgroundColor: "#fff",
@@ -156,8 +157,9 @@ const styles = StyleSheet.create({
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   playerContainer: {
     flexDirection: "row",

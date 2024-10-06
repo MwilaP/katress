@@ -18,7 +18,7 @@ const Details = () => {
                 setTournaments(route.params.tournament);
                 setLoading(false);
             }
-        }, [])
+        }, [route])
     );
 
     const tabs = [
@@ -80,10 +80,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFF',
-    },
+        marginTop: - 25
+        },
     tabContainer: {
         flexDirection: 'row',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#fff',
         borderRadius: 25,
         margin: 10,
         padding: 5,
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        paddingTop: 20,
+       // paddingTop: 20,
         //marginTop: -20,
     },
 });

@@ -104,6 +104,7 @@ const GroupsScreen = ({ tournament }) => {
   const [selectedParticipant, setSelectedParticipant] = useState("");
   const [selectedGroupForNewParticipant, setSelectedGroupForNewParticipant] = useState("");
   const [adding, setAdding] = useState(false)
+  const [groupSaving, setGroupsaving] = useState(false)
 
   const navigation = useNavigation();
 
@@ -134,12 +135,13 @@ const GroupsScreen = ({ tournament }) => {
     useCallback(() => {
       const getGroups = async () => {
         console.log("running");
-        const data = await AsyncStorage.getItem(`groups_${tournament._id}`)
-        if (data) {
-          setGroups(JSON.parse(data))
-          setGroupsLoading(false)
-        }
+        // const data = await AsyncStorage.getItem(`groups_${tournament._id}`)
+        // if (data) {
+        //   setGroups(JSON.parse(data))
+        //   setGroupsLoading(false)
+        // }
         socket.emit("groups", tournament._id);
+        console.log(tournament?._id)
         socket.on("groups", async (data) => {
           //const islength = [...data];
           //console.log(islength.length);
@@ -160,7 +162,7 @@ const GroupsScreen = ({ tournament }) => {
 
       };
       getGroups();
-    }, [])
+    }, [tournament])
   );
 
   function isEmptyObject(obj) {
@@ -210,6 +212,8 @@ const GroupsScreen = ({ tournament }) => {
         }
       }
       setLoading(true);
+      setGroupsaving(true)
+
       const response = await axios.post(
         `${serverUrl}/tournaments/${tournament._id}/group`,
         { data: idsObject }
@@ -219,10 +223,13 @@ const GroupsScreen = ({ tournament }) => {
         setGroups(response.data);
         setGenerateGroups("");
         setLoading(false);
+        setGroupsaving(false)
       }
     } catch (error) {
       console.error("Error sending IDs to backend:", error);
+      Alert.alert('ERROR', 'something went wrong. try again')
       setLoading(false);
+      setGroupsaving(false)
     }
   };
 
@@ -523,7 +530,7 @@ const GroupsScreen = ({ tournament }) => {
                     onPress={() => sendIdsToBackend()}
                     style={styles.saveButton}
                   >
-                    <Text style={styles.saveButtonText}>SAVE</Text>
+                    {groupSaving ? (<Text style={styles.saveButtonText}>SAVING...</Text>):(<Text style={styles.saveButtonText}>SAVE</Text>)}
                   </TouchableOpacity>
                 </ScrollView>
               ) : (

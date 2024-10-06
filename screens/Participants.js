@@ -67,7 +67,7 @@ const Participants = ({ tournament }) => {
         } catch (error) {}
       };
       getPlayers();
-    }, [])
+    }, [tournament])
   );
 
   const addPlayer = async () => {
@@ -218,7 +218,7 @@ const Participants = ({ tournament }) => {
         onHardwareBackPress={() => setAddParticipants(false)}
         onSwipeOut={() => setAddParticipants(false)}
         visible={addParticipants}
-        height={0.4}
+        height={0.45}
       >
         <ModalContent
           style={{

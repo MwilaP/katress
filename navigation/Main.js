@@ -32,6 +32,7 @@ const Tournment = ({ navigation }) => (
       component={HomeScreen}
     />
     <TournmentStack.Screen
+    
       name="Tournament"
       component={Details}
     />
