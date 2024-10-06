@@ -69,7 +69,7 @@ const HomeScreen = ({ navigation }) => {
 
     try {
       setDeleting(true)
-      const response = await axios.delete(`${serverUrl}/tournaments/${tournamentToDelete._id}`);
+      const response = await axios.delete(`${serverUrl}/tournaments/tournaments/${tournamentToDelete._id}`);
       if (response.status === 200) {
         const updatedTournaments = tournaments.filter(t => t._id !== tournamentToDelete._id);
         setTournaments(updatedTournaments);

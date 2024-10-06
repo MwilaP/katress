@@ -170,7 +170,7 @@ const Participants = ({ tournament }) => {
                 alignItems: "center",
               }}
             >
-              <Pressable
+            { user &&( <Pressable
                 onPress={() => setAddParticipants(true)}
                 style={{
                   borderWidth: 2,
@@ -188,7 +188,8 @@ const Participants = ({ tournament }) => {
                 <Text style={{ paddingHorizontal: 5, color: "green" }}>
                   Add Players
                 </Text>
-              </Pressable>
+              </Pressable>)
+              }
             </View>
           </View>
         )}
