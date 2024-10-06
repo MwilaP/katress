@@ -32,9 +32,6 @@ const Tournment = ({ navigation }) => (
       component={HomeScreen}
     />
     <TournmentStack.Screen
-    options={{
-      headerShown: false,
-    }}
       name="Tournament"
       component={Details}
     />
