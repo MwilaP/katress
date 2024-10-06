@@ -19,8 +19,10 @@ import { useSocket } from "../hooks/SocketProvider";
 import { Modal, ModalContent, SlideAnimation } from "react-native-modals";
 import { useAuth } from "../hooks/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from '@react-navigation/native';
 
-  
+
+
 
 const initialStats = (group) =>
   group?.reduce((acc, player) => {
@@ -69,7 +71,7 @@ function createRandomGroups(array, groupSize) {
   return groups;
 }
 
-const GroupsScreen = ({ navigation, tournament }) => {
+const GroupsScreen = ({ tournament }) => {
   const [groups, setGroups] = useState("");
   const [generatedGroups, setGenerateGroups] = useState("");
   const [dumy, setDumy] = useState("");
@@ -90,7 +92,7 @@ const GroupsScreen = ({ navigation, tournament }) => {
   const [selectedGroup, setSelectedGroup] = useState("A");
   const [selectedMatch, setSelectedMatch] = useState("");
   const [selectedWinner, setSelectedWinner] = useState("");
-  const {user} = useAuth()
+  const { user } = useAuth()
 
   const [player1Score, setPlayer1Score] = useState("");
   const [player2Score, setPlayer2Score] = useState("");
@@ -101,7 +103,9 @@ const GroupsScreen = ({ navigation, tournament }) => {
 
   const [selectedParticipant, setSelectedParticipant] = useState("");
   const [selectedGroupForNewParticipant, setSelectedGroupForNewParticipant] = useState("");
-const [adding, setAdding] = useState(false)
+  const [adding, setAdding] = useState(false)
+
+  const navigation = useNavigation();
 
 
   useFocusEffect(
@@ -115,12 +119,12 @@ const [adding, setAdding] = useState(false)
             );
             if (players.data) {
               setParticipants(players.data);
-              
+
             } else {
               //setGroupsLoading(false);
             }
           }
-        } catch (error) {}
+        } catch (error) { }
       };
       getPlayers();
       //setGroupsLoading(false);
@@ -131,7 +135,7 @@ const [adding, setAdding] = useState(false)
       const getGroups = async () => {
         console.log("running");
         const data = await AsyncStorage.getItem(`groups_${tournament._id}`)
-        if (data){
+        if (data) {
           setGroups(JSON.parse(data))
           setGroupsLoading(false)
         }
@@ -151,9 +155,9 @@ const [adding, setAdding] = useState(false)
           }
           setGroupsLoading(false);
 
-          
+
         });
-        
+
       };
       getGroups();
     }, [])
@@ -170,7 +174,7 @@ const [adding, setAdding] = useState(false)
     }
 
     try {
-      console.log('group', selectedGroupForNewParticipant, 'player: ', selectedParticipant )
+      console.log('group', selectedGroupForNewParticipant, 'player: ', selectedParticipant)
 
       setAdding(true)
       const response = await axios.post(`${serverUrl}/tournaments/${tournament._id}/addParticipant`, {
@@ -183,7 +187,7 @@ const [adding, setAdding] = useState(false)
         socket.emit("groups", tournament._id);
         setAdding(false)
         Alert.alert("Success", "Participant added to group successfully");
-        
+
       }
     } catch (error) {
       console.error("Error adding participant to group:", error);
@@ -225,46 +229,46 @@ const [adding, setAdding] = useState(false)
 
   const getUngroupedParticipants = useCallback(() => {
     if (!groups || !participants) return [];
-  
+
     // Collect all grouped participant IDs
     const groupedParticipants = Object.values(groups)
       .flatMap(group => group.map(player => player.data._id)); // Get _id from each player in each group
-  
+
     //console.log('GROUPED: ', groupedParticipants);
-  
+
     // Convert groupedParticipants to a Set for efficient lookup
     const groupedSet = new Set(groupedParticipants);
-  
+
     // Filter participants that are not in groupedSet
     return participants.filter(participant => !groupedSet.has(participant._id));
   }, [groups, participants]);
-  
+
 
   const handleConfirm = () => {
 
     setLoading(true)
-  
+
     try {
       if (numberOfPlayers > 0) {
         setGenerateGroups(createRandomGroups(participants, numberOfPlayers))
         setLoading(false)
-  }
- 
-  else{
-    Alert.alert('number error', 'please input a number')
-    setLoading(false)
-  }
-      
-      
+      }
+
+      else {
+        Alert.alert('number error', 'please input a number')
+        setLoading(false)
+      }
+
+
     } catch (error) {
 
       console.log(error)
       Alert.alert('error', 'something went wrong. please try again')
       setLoading(false)
-      
+
     }
   }
-  
+
 
   const updateStats = (
     groupName,
@@ -325,13 +329,13 @@ const [adding, setAdding] = useState(false)
   function getGroupInfo(inputObj) {
     // Initialize an empty array to store the result for all keys
     let result = [];
-  
+
     // Loop through all keys in the input object
     for (let key in inputObj) {
       if (inputObj.hasOwnProperty(key)) {
         // Extract the first group_id from the array under the key
         const group_id = inputObj[key][0].group_id;
-  
+
         // Push the result object for each key into the array
         result.push({
           name: key,
@@ -339,12 +343,12 @@ const [adding, setAdding] = useState(false)
         });
       }
     }
-  
+
     return result;
   }
 
-  const toGroupmatches = (tournamentid, groupid)=> {
-    if(user){
+  const toGroupmatches = (tournamentid, groupid) => {
+    if (user) {
       navigation.navigate('GroupMatches', {
         tournament: tournamentid,
         group: groupid,
@@ -358,22 +362,22 @@ const [adding, setAdding] = useState(false)
     const groupA = group[groupName];
     const sortedPlayers = groups
       ? groupA.sort((a, b) => {
-          return (
-            b.data.points - a.data.points ||
-            b.data.scoreFor -
-              b.data.scoreAgainst -
-              (a.data.scoreFor - a.data.scoreAgainst) ||
-            (b.data.headToHead[a.data.name] || 0) -
-              (a.data.headToHead[b.data.name] || 0)
-          );
-        })
+        return (
+          b.data.points - a.data.points ||
+          b.data.scoreFor -
+          b.data.scoreAgainst -
+          (a.data.scoreFor - a.data.scoreAgainst) ||
+          (b.data.headToHead[a.data.name] || 0) -
+          (a.data.headToHead[b.data.name] || 0)
+        );
+      })
       : groupA.sort((a, b) => {
-          return (
-            b.points - a.points ||
-            b.scoreFor - b.scoreAgainst - (a.scoreFor - a.scoreAgainst) ||
-            (b.headToHead[a.name] || 0) - (a.headToHead[b.name] || 0)
-          );
-        });
+        return (
+          b.points - a.points ||
+          b.scoreFor - b.scoreAgainst - (a.scoreFor - a.scoreAgainst) ||
+          (b.headToHead[a.name] || 0) - (a.headToHead[b.name] || 0)
+        );
+      });
 
     const player = groups
       ? sortedPlayers.map((player) => player.data)
@@ -381,22 +385,22 @@ const [adding, setAdding] = useState(false)
 
     return (
       <Pressable
-        onPress={() => toGroupmatches(tournament._id, groupA[0].group_id )
-        // {
-        //   if(user){
-        //     navigation.navigate("GroupMatches", {
-        //       tournament: tournament._id,
-        //       group: groupA[0].group_id,
-        //     })
-        //   }
-        // }
+        onPress={() => toGroupmatches(tournament._id, groupA[0].group_id)
+          // {
+          //   if(user){
+          //     navigation.navigate("GroupMatches", {
+          //       tournament: tournament._id,
+          //       group: groupA[0].group_id,
+          //     })
+          //   }
+          // }
         }
         style={styles.table}
       >
         {showGroupName && <Text style={styles.groupHeader}>Group {groupName}</Text>}
         <View style={styles.headerRow}>
           <Text style={[styles.headerCell, { flex: 2 }]}>Name</Text>
-          
+
           <Text style={styles.headerCell}>GP</Text>
           <Text style={styles.headerCell}>GW</Text>
           <Text style={styles.headerCell}>GL</Text>
@@ -409,7 +413,7 @@ const [adding, setAdding] = useState(false)
         {player.map((player, index) => (
           <View key={index} style={[styles.row, index % 2 === 0 ? styles.evenRow : styles.oddRow]}>
             <Text style={[styles.cell, { flex: 2 }]}>{player?.firstName} {player.lastName}</Text>
-            
+
             <Text style={styles.cell}>{player?.gamesPlayed}</Text>
             <Text style={styles.cell}>{player?.gamesWon}</Text>
             <Text style={styles.cell}>{player?.gamesLost}</Text>
@@ -424,157 +428,157 @@ const [adding, setAdding] = useState(false)
   };
 
   const RenderGroups = () => {
-    const {user} = useAuth()
+    const { user } = useAuth()
     const groupKeys = Object.keys(groups);
     const newGroup = getGroupInfo(groups)
     const showGroupNames = groupKeys.length > 1;
     const ungroupedParticipants = getUngroupedParticipants();
-    return(
-      <View style={{flex: 1}}>
+    return (
+      <View style={{ flex: 1 }}>
 
         {
-          groups ?(
+          groups ? (
 
-            <ScrollView style={{flex: 1}}>
-        {Object.keys(groups)?.map((groupName) => (
-          <View key={groupName}>
-             <RenderTable groupName={groupName} group={groups} showGroupName={showGroupNames} />
-          </View>
-        ))}
+            <ScrollView style={{ flex: 1 }}>
+              {Object.keys(groups)?.map((groupName) => (
+                <View key={groupName}>
+                  <RenderTable groupName={groupName} group={groups} showGroupName={showGroupNames} />
+                </View>
+              ))}
 
-        {
-          user && (
+              {
+                user && (
 
-            <View style={styles.addParticipantContainer}>
-          <Text style={styles.sectionHeader}>Add Participant to Group</Text>
-          <Picker
-            selectedValue={selectedParticipant}
-            onValueChange={(itemValue) => setSelectedParticipant(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select Participant" value="" />
-            {ungroupedParticipants.map((participant) => (
-              <Picker.Item
-                key={participant._id}
-                label={participant.firstName + ' ' + participant.lastName}
-                value={participant._id}
-              />
-            ))}
-          </Picker>
-          <Picker
-            selectedValue={selectedGroupForNewParticipant}
-            onValueChange={(itemValue) => setSelectedGroupForNewParticipant(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select Group" value="" />
-            {newGroup.map((group) => (
-              <Picker.Item
-                key={group.groupid}
-                label={`Group ${group.name}`}
-                value={group.groupid}
-              />
-            ))}
-          </Picker>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              (!selectedParticipant || !selectedGroupForNewParticipant) && styles.disabledButton
-            ]}
-            onPress={addParticipant}
-            disabled={!selectedParticipant || !selectedGroupForNewParticipant}
-          >
-            {
-              adding ?
-              (
-                <ActivityIndicator/>
-              ): (
+                  <View style={styles.addParticipantContainer}>
+                    <Text style={styles.sectionHeader}>Add Participant to Group</Text>
+                    <Picker
+                      selectedValue={selectedParticipant}
+                      onValueChange={(itemValue) => setSelectedParticipant(itemValue)}
+                      style={styles.picker}
+                    >
+                      <Picker.Item label="Select Participant" value="" />
+                      {ungroupedParticipants.map((participant) => (
+                        <Picker.Item
+                          key={participant._id}
+                          label={participant.firstName + ' ' + participant.lastName}
+                          value={participant._id}
+                        />
+                      ))}
+                    </Picker>
+                    <Picker
+                      selectedValue={selectedGroupForNewParticipant}
+                      onValueChange={(itemValue) => setSelectedGroupForNewParticipant(itemValue)}
+                      style={styles.picker}
+                    >
+                      <Picker.Item label="Select Group" value="" />
+                      {newGroup.map((group) => (
+                        <Picker.Item
+                          key={group.groupid}
+                          label={`Group ${group.name}`}
+                          value={group.groupid}
+                        />
+                      ))}
+                    </Picker>
+                    <TouchableOpacity
+                      style={[
+                        styles.button,
+                        (!selectedParticipant || !selectedGroupForNewParticipant) && styles.disabledButton
+                      ]}
+                      onPress={addParticipant}
+                      disabled={!selectedParticipant || !selectedGroupForNewParticipant}
+                    >
+                      {
+                        adding ?
+                          (
+                            <ActivityIndicator />
+                          ) : (
 
-                <Text style={styles.buttonText}>Add to Group</Text>
+                            <Text style={styles.buttonText}>Add to Group</Text>
 
-              )
-            }
-          </TouchableOpacity>
-        </View>
+                          )
+                      }
+                    </TouchableOpacity>
+                  </View>
 
-          )
-        }
-         
+                )
+              }
 
-        
 
-        
-      </ScrollView>
+
+
+
+            </ScrollView>
 
           ) : (
 
             <View style={styles.noGroupsContainer}>
-          {generatedGroups ? (
-            <ScrollView style={styles.generatedGroupsContainer}>
-              {Object.keys(generatedGroups)?.map((groupName) => (
-                <View key={groupName}>
-                  <RenderTable groupName={groupName} group={generatedGroups} />
-                </View>
-              ))}
-              <TouchableOpacity
-                onPress={() => sendIdsToBackend()}
-                style={styles.saveButton}
-              >
-                <Text style={styles.saveButtonText}>SAVE</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          ) : (
-            <><View style={styles.noGroupsContent}>
+              {generatedGroups ? (
+                <ScrollView style={styles.generatedGroupsContainer}>
+                  {Object.keys(generatedGroups)?.map((groupName) => (
+                    <View key={groupName}>
+                      <RenderTable groupName={groupName} group={generatedGroups} />
+                    </View>
+                  ))}
+                  <TouchableOpacity
+                    onPress={() => sendIdsToBackend()}
+                    style={styles.saveButton}
+                  >
+                    <Text style={styles.saveButtonText}>SAVE</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              ) : (
+                <><View style={styles.noGroupsContent}>
                   <Text style={styles.noGroupsText}>No Groups</Text>
-                 {user && ( <TouchableOpacity
+                  {user && (<TouchableOpacity
                     onPress={() => {
                       //setLoading(true);
                       setGenerate(true)
-                     // setGenerateGroups(createRandomGroups(participants, 8));
+                      // setGenerateGroups(createRandomGroups(participants, 8));
                       //setLoading(false);
-                    } }
+                    }}
                     style={styles.generateButton}
                   >
                     <Text style={styles.generateButtonText}>Generate</Text>
                   </TouchableOpacity>)}
                 </View>
-                <Modal
-        visible={generate}
-        onSwipeOut={(event) => {
-          setGenerate(false);
-        }}
-        modalAnimation={new SlideAnimation({
-          slideFrom: 'bottom',
-        })}
-      >
-        <ModalContent>
-          <View style={{ padding: 20 }}>
-            <Text style={{ fontSize: 18, marginBottom: 10 }}>
-              Set the Number of Players Per Group
-            </Text>
-            <TextInput
-              keyboardType="numeric"
-              placeholder="Enter number of players"
-              value={numberOfPlayers}
-              onChangeText={setNumberOfPlayers}
-              style={{
-                borderWidth: 1,
-                borderColor: '#ccc',
-                borderRadius: 5,
-                padding: 10,
-                marginBottom: 20,
-              }}
-            />
-            <Button title="Confirm" onPress={handleConfirm} />
-            <View style={{padding: 3, margin: 2}}>
-            <Button title="Cancel" onPress={() => setGenerate(false)} />
+                  <Modal
+                    visible={generate}
+                    onSwipeOut={(event) => {
+                      setGenerate(false);
+                    }}
+                    modalAnimation={new SlideAnimation({
+                      slideFrom: 'bottom',
+                    })}
+                  >
+                    <ModalContent>
+                      <View style={{ padding: 20 }}>
+                        <Text style={{ fontSize: 18, marginBottom: 10 }}>
+                          Set the Number of Players Per Group
+                        </Text>
+                        <TextInput
+                          keyboardType="numeric"
+                          placeholder="Enter number of players"
+                          value={numberOfPlayers}
+                          onChangeText={setNumberOfPlayers}
+                          style={{
+                            borderWidth: 1,
+                            borderColor: '#ccc',
+                            borderRadius: 5,
+                            padding: 10,
+                            marginBottom: 20,
+                          }}
+                        />
+                        <Button title="Confirm" onPress={handleConfirm} />
+                        <View style={{ padding: 3, margin: 2 }}>
+                          <Button title="Cancel" onPress={() => setGenerate(false)} />
 
+                        </View>
+
+                      </View>
+                    </ModalContent>
+                  </Modal></>
+              )}
             </View>
-            
-          </View>
-        </ModalContent>
-      </Modal></>
-          )}
-        </View>
 
           )
 
@@ -586,7 +590,7 @@ const [adding, setAdding] = useState(false)
 
 
 
-  
+
 
   return (
     <View style={styles.container}>
@@ -594,11 +598,11 @@ const [adding, setAdding] = useState(false)
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#3498db" />
         </View>
-      ) : 
-      (
-        <RenderGroups/>
-        
-      )}
+      ) :
+        (
+          <RenderGroups />
+
+        )}
     </View>
   );
 };

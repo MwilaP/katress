@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useMemo, useRef, useEffect } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View, TextInput, Alert, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
@@ -11,6 +11,9 @@ const MatchScreen = ({ navigation, tournament }) => {
   //const { tournament, group } = route.params;
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const debounceTimeout = useRef(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -43,6 +46,45 @@ const MatchScreen = ({ navigation, tournament }) => {
   );
 
 
+  useEffect(() => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [searchQuery]);
+
+
+  const filteredMatches = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) return matches;
+
+    const searchTerms = debouncedSearchQuery.toLowerCase().split(/\s*(?:vs|&)\s*/);
+    
+    return matches.filter((match) => {
+      const player1FullName = `${match.player1.firstName} ${match.player1.lastName}`.toLowerCase();
+      const player2FullName = `${match.player2.firstName} ${match.player2.lastName}`.toLowerCase();
+      
+      if (searchTerms.length === 1) {
+        // Single player search
+        return player1FullName.includes(searchTerms[0]) || player2FullName.includes(searchTerms[0]);
+      } else if (searchTerms.length === 2) {
+        // Two player search
+        return (
+          (player1FullName.includes(searchTerms[0]) && player2FullName.includes(searchTerms[1])) ||
+          (player1FullName.includes(searchTerms[1]) && player2FullName.includes(searchTerms[0]))
+        );
+      }
+      return false;
+    });
+  }, [matches, debouncedSearchQuery]);
+
   const MatchItem = ({ match }) => (
     <Pressable
      
@@ -69,8 +111,15 @@ const MatchScreen = ({ navigation, tournament }) => {
   }
   return (
     <View style={styles.container}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search (e.g., 'Oscar' or 'Oscar vs James')"
+        value={searchQuery}
+        placeholderTextColor='gray'
+        onChangeText={setSearchQuery}
+      />
       <FlatList
-        data={matches}
+        data={filteredMatches}
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item }) => <MatchItem match={item} />}
         contentContainerStyle={styles.listContent}
@@ -88,7 +137,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-    padding: 16,
+    padding: 5,
   },
   title: {
     fontSize: 24,
@@ -171,5 +220,14 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  searchInput: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#ccc",
   },
 })

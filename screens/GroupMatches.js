@@ -1,9 +1,11 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useMemo, useRef, useEffect } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View, TextInput, Alert, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import { BottomModal, ModalContent, ModalButton } from "react-native-modals";
 import serverUrl from "../hooks/server";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 const GroupMatches = ({ route }) => {
   const { tournament, group } = route.params;
@@ -14,17 +16,28 @@ const GroupMatches = ({ route }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [updateloading, setUpdateloading] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const debounceTimeout = useRef(null);
 
   useFocusEffect(
     useCallback(() => {
       const getMatches = async () => {
+        const data = await AsyncStorage.getItem(`groupmatches_${tournament._id}`)
+        if (data){
+          setMatches(JSON.parsed(data));
+          setLoading(false)
+
+        }
         try {
           if (tournament) {
             const response = await axios.get(
               `${serverUrl}/tournaments/${tournament}/matches/${group}`
+              
             );
             if (response.data) {
               setMatches(response.data);
+              await AsyncStorage.setItem(`groupmatches_${tournament._id}`, JSON.stringify(response.data))
               setLoading(false)
             }
           }
@@ -37,6 +50,21 @@ const GroupMatches = ({ route }) => {
       getMatches();
     }, [tournament, group])
   );
+
+  useEffect(() => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [searchQuery]);
 
   const updateMatchScore = async () => {
 
@@ -85,6 +113,29 @@ const GroupMatches = ({ route }) => {
     }
   };
 
+  const filteredMatches = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) return matches;
+
+    const searchTerms = debouncedSearchQuery.toLowerCase().split(/\s*(?:vs|&)\s*/);
+    
+    return matches.filter((match) => {
+      const player1FullName = `${match.player1.firstName} ${match.player1.lastName}`.toLowerCase();
+      const player2FullName = `${match.player2.firstName} ${match.player2.lastName}`.toLowerCase();
+      
+      if (searchTerms.length === 1) {
+        // Single player search
+        return player1FullName.includes(searchTerms[0]) || player2FullName.includes(searchTerms[0]);
+      } else if (searchTerms.length === 2) {
+        // Two player search
+        return (
+          (player1FullName.includes(searchTerms[0]) && player2FullName.includes(searchTerms[1])) ||
+          (player1FullName.includes(searchTerms[1]) && player2FullName.includes(searchTerms[0]))
+        );
+      }
+      return false;
+    });
+  }, [matches, debouncedSearchQuery]);
+
   const MatchItem = ({ match }) => (
     <Pressable
       onPress={() => {
@@ -118,8 +169,15 @@ const GroupMatches = ({ route }) => {
   return (
     <View style={styles.container}>
      
+     <TextInput
+        style={styles.searchInput}
+        placeholder="Search (e.g., 'Oscar' or 'Oscar vs James')"
+        placeholderTextColor='gray'
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
       <FlatList
-        data={matches}
+        data={filteredMatches}
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item }) => <MatchItem match={item} />}
         contentContainerStyle={styles.listContent}
@@ -270,6 +328,15 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  searchInput: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#ccc",
   },
 });
 

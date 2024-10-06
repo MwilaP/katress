@@ -24,59 +24,8 @@ import Modal, {
 } from "react-native-modals";
 import { TextInput } from "react-native-paper";
 import { useAuth } from "../hooks/AuthContext";
-const GROUPS = {
-  A: [
-    { name: "Nathan" },
-    { name: "Rachel" },
-    { name: "Mona" },
-    { name: "Kathy" },
-    { name: "Charlie" },
-  ],
-  B: [
-    { name: "Jack" },
-    { name: "Bob" },
-    { name: "Hannah" },
-    { name: "Paul" },
-    { name: "Steve" },
-  ],
-  C: [
-    { name: "Tina" },
-    { name: "Alice" },
-    { name: "Frank" },
-    { name: "Eve" },
-    { name: "Ivy" },
-  ],
-  D: [
-    { name: "Quincy" },
-    { name: "Leo" },
-    { name: "David" },
-    { name: "Olivia" },
-    { name: "Grace" },
-  ],
-};
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const data = [
-  { name: "Alice" },
-  { name: "Bob" },
-  { name: "Charlie" },
-  { name: "David" },
-  { name: "Eve" },
-  { name: "Frank" },
-  { name: "Grace" },
-  { name: "Hannah" },
-  { name: "Ivy" },
-  { name: "Jack" },
-  { name: "Kathy" },
-  { name: "Leo" },
-  { name: "Mona" },
-  { name: "Nathan" },
-  { name: "Olivia" },
-  { name: "Paul" },
-  { name: "Quincy" },
-  { name: "Rachel" },
-  { name: "Steve" },
-  { name: "Tina" },
-];
 
 const Participants = ({ tournament }) => {
   const [participants, setParticipants] = useState("");
@@ -93,6 +42,12 @@ const Participants = ({ tournament }) => {
   useFocusEffect(
     useCallback(() => {
       const getPlayers = async () => {
+
+        const data = await AsyncStorage.getItem(`participants_${tournament._id}`)
+        if(data){
+          setParticipants(JSON.parse(data))
+          setLoading(false)
+        }
         try {
           if (tournament) {
             const players = await axios.get(
@@ -100,7 +55,10 @@ const Participants = ({ tournament }) => {
             );
             if (players.data) {
               setParticipants(players.data);
-              console.log(players.data)
+              //console.log(players.data)
+
+              await AsyncStorage.setItem(`participants_${tournament?._id}`, JSON.stringify(players?.data))
+
               setLoading(false);
             } else {
               setLoading(false);
